@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:sugar_wise/features/auth/register/patient_registration/view_models/patient_registration_view_model.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
@@ -18,7 +19,7 @@ class PatientRegistrationView extends StatelessWidget {
 class _RegistrationContent extends StatelessWidget {
   const _RegistrationContent();
 
-  final Color primaryGreen = const Color(0xFF00C897);
+  final Color primaryGreen = AppColors.brandGreen;
   final Color darkText = const Color(0xFF1D2939);
 
   @override

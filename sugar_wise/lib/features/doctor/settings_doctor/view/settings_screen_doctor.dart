@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/patient/appearance_theme/view/apperance_screen.dart';
 import 'package:sugar_wise/features/patient/helpsupport/helpsupport_screen.dart';
 import 'package:sugar_wise/features/patient/language_screen/view/language_screen.dart';
@@ -29,13 +30,13 @@ class SettingsScreenDoctor extends StatelessWidget {
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios_new,
-            color: isDark ? Colors.white : const Color(0xFFE64A19),
+            color: isDark ? Colors.white : AppColors.primaryBlue,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "Settings".tr(),
+          "settings".tr(),
           style: TextStyle(
             color: textColor,
             fontWeight: FontWeight.bold,
@@ -49,12 +50,12 @@ class SettingsScreenDoctor extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SectionHeader(title: "ACCOUNT & SECURITY".tr()),
+              _SectionHeader(title: "account_security_section".tr()),
               _CustomSettingsItem(
                 icon: Icons.person_outline,
                 iconColor: Colors.blue,
                 iconBgColor: Colors.blue.withValues(alpha: 0.1),
-                title: "Edit Profile".tr(),
+                title: "edit_profile".tr(),
                 isSelected: viewModel.selectedIndex == 0,
                 onTap: () => viewModel.selectItem(0, () {
                   Navigator.push(
@@ -69,7 +70,7 @@ class SettingsScreenDoctor extends StatelessWidget {
                 icon: Icons.notifications_none_outlined,
                 iconColor: Colors.orange,
                 iconBgColor: Colors.orange.withValues(alpha: 0.1),
-                title: "Notifications".tr(),
+                title: "notifications".tr(),
                 isSelected: viewModel.selectedIndex == 1,
                 onTap: () => viewModel.selectItem(1, () {
                   Navigator.push(
@@ -84,7 +85,7 @@ class SettingsScreenDoctor extends StatelessWidget {
                 icon: Icons.security_outlined,
                 iconColor: Colors.green,
                 iconBgColor: Colors.green.withValues(alpha: 0.1),
-                title: "Security Settings".tr(),
+                title: "security_settings".tr(),
                 isSelected: viewModel.selectedIndex == 2,
                 onTap: () => viewModel.selectItem(2, () {
                   Navigator.push(
@@ -96,12 +97,12 @@ class SettingsScreenDoctor extends StatelessWidget {
                 }),
               ),
               const SizedBox(height: 24),
-              _SectionHeader(title: "PREFERENCES".tr()),
+              _SectionHeader(title: "preferences_section".tr()),
               _CustomSettingsItem(
                 icon: Icons.account_balance_wallet_outlined,
                 iconColor: Colors.purple,
                 iconBgColor: Colors.purple.withValues(alpha: 0.1),
-                title: "Billing & Plans".tr(),
+                title: "billing_plans".tr(),
                 isSelected: viewModel.selectedIndex == 3,
                 onTap: () => viewModel.selectItem(3, () {
                   Navigator.push(
@@ -114,7 +115,7 @@ class SettingsScreenDoctor extends StatelessWidget {
                 icon: Icons.color_lens_outlined,
                 iconColor: Colors.pink,
                 iconBgColor: Colors.pink.withValues(alpha: 0.1),
-                title: "Appearance & Theme".tr(),
+                title: "appearance_theme".tr(),
                 isSelected: viewModel.selectedIndex == 4,
                 onTap: () => viewModel.selectItem(4, () {
                   Navigator.push(
@@ -129,7 +130,7 @@ class SettingsScreenDoctor extends StatelessWidget {
                 icon: Icons.language_outlined,
                 iconColor: Colors.blueAccent,
                 iconBgColor: Colors.blueAccent.withValues(alpha: 0.1),
-                title: "Language Settings".tr(),
+                title: "language_settings".tr(),
                 isSelected: viewModel.selectedIndex == 5,
                 onTap: () => viewModel.selectItem(5, () {
                   Navigator.push(
@@ -141,12 +142,12 @@ class SettingsScreenDoctor extends StatelessWidget {
                 }),
               ),
               const SizedBox(height: 24),
-              _SectionHeader(title: "SUPPORT".tr()),
+              _SectionHeader(title: "support_section".tr()),
               _CustomSettingsItem(
                 icon: Icons.help_outline,
                 iconColor: Colors.orangeAccent,
                 iconBgColor: Colors.orangeAccent.withValues(alpha: 0.1),
-                title: "Help & Support".tr(),
+                title: "help_support".tr(),
                 isSelected: viewModel.selectedIndex == 6,
                 onTap: () => viewModel.selectItem(6, () {
                   Navigator.push(
@@ -173,7 +174,33 @@ class SettingsScreenDoctor extends StatelessWidget {
     bool isDark,
   ) {
     return InkWell(
-      onTap: () => viewModel.logout(context),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("logout_title".tr()),
+              content: Text("logout_confirm".tr()),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("cancel".tr()),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    viewModel.logout(context);
+                  },
+                  child: Text(
+                    "logout".tr(),
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: double.infinity,
@@ -193,7 +220,7 @@ class SettingsScreenDoctor extends StatelessWidget {
             const Icon(Icons.logout, color: Colors.redAccent, size: 20),
             const SizedBox(width: 10),
             Text(
-              "Logout".tr(),
+              "logout".tr(),
               style: const TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
@@ -233,7 +260,7 @@ class _CustomSettingsItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isSelected
-            ? const Color(0xff2F66D0)
+            ? AppColors.primaryBlue
             : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: isDark && !isSelected

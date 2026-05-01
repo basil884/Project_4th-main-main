@@ -7,7 +7,7 @@ class NotificationsViewModel extends ChangeNotifier {
   String get selectedTab => _selectedTab;
 
   // 1. البيانات الوهمية (مطابقة للصورة تماماً، أول اثنين غير مقروءين)
-  final List<NotificationModel> _notifications = [
+  static final List<NotificationModel> _notifications = [
     NotificationModel(
       id: "1",
       title: "New Appointment Request",
@@ -59,6 +59,11 @@ class NotificationsViewModel extends ChangeNotifier {
       isRead: true, // ✅ مقروء
     ),
   ];
+
+  void addNotification(NotificationModel notification) {
+    _notifications.insert(0, notification);
+    notifyListeners();
+  }
 
   // 2. حساب عدد الإشعارات غير المقروءة (Badge)
   int get unreadCount => _notifications.where((n) => !n.isRead).length;

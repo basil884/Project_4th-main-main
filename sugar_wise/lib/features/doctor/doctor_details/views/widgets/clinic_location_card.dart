@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import '../../models/clinic_model.dart';
 import 'book_appointment_sheet.dart';
 
@@ -58,13 +59,13 @@ class ClinicLocationCard extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   clinic.price,
                   style: const TextStyle(
-                    color: Colors.blue,
+                    color: AppColors.primaryBlue,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -135,9 +136,7 @@ class ClinicLocationCard extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(
-                  0xFF1976D2,
-                ), // لون الزر الأزرق الثابت
+                backgroundColor: AppColors.primaryBlue,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -165,7 +164,7 @@ class ClinicLocationCard extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF1976D2)),
+        Icon(icon, size: 16, color: AppColors.primaryBlue),
         const SizedBox(width: 8),
         Expanded(
           child: Column(

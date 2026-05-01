@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/auth/signin/view_models/login_view_model.dart';
 import 'widgets/login_header.dart';
 import 'widgets/login_form.dart';
@@ -27,8 +28,8 @@ class _LoginContent extends StatelessWidget {
     return Scaffold(
       // ✅ لون الخلفية الداكن (الجزء العلوي) يتجاوب مع الثيم
       backgroundColor: isDark
-          ? const Color(0xFF1A1A1A)
-          : const Color(0xFF37474F),
+          ? AppColors.darkBackground
+          : AppColors.primaryBlue,
       body: SafeArea(
         bottom: false, // ليمتد اللون لأسفل الشاشة
         child: Column(

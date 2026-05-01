@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:sugar_wise/features/doctor/doctor_view_patient/doctor_card.dart';
 import 'package:sugar_wise/features/doctor/doctor_view_patient/view_models/doctors_view_modle.dart';
 import 'package:sugar_wise/features/doctor/doctor_view_patient/model/doctor_model.dart';
@@ -12,25 +13,25 @@ class DoctorViewToPatient extends StatefulWidget {
 
 class _DoctorViewToPatientState extends State<DoctorViewToPatient> {
   String searchQuery = '';
-  String selectedSpecialty = 'All Specialties';
+  String selectedSpecialty = 'all_specialties';
 
   // قائمة التخصصات
   final List<String> specialtiesList = [
-    "All Specialties",
-    "Endocrine Glands",
-    "Cardiologist",
-    "Heart Surgeon",
+    "all_specialties",
+    "specialty_endocrine",
+    "specialty_cardiologist",
+    "specialty_heart_surgeon",
   ];
 
   // دالة الفلترة
   List<DoctorModle> get filteredDoctors {
     return globalDoctorsList.where((doctor) {
       bool matchesSpecialty = false;
-      if (selectedSpecialty == 'All Specialties') {
+      if (selectedSpecialty == 'all_specialties') {
         matchesSpecialty = true;
       } else {
         matchesSpecialty = doctor.specialty.toLowerCase().contains(
-          selectedSpecialty.toLowerCase().trim(),
+          selectedSpecialty.tr().toLowerCase().trim(),
         );
       }
 
@@ -69,7 +70,7 @@ class _DoctorViewToPatientState extends State<DoctorViewToPatient> {
         elevation: 0,
         iconTheme: IconThemeData(color: textColor), // ✅ لون سهم الرجوع متجاوب
         title: Text(
-          ('Find the Best Doctors'),
+          "find_best_doctors".tr(),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -112,7 +113,7 @@ class _DoctorViewToPatientState extends State<DoctorViewToPatient> {
                       },
                       style: TextStyle(color: textColor), // ✅ لون النص المكتوب
                       decoration: InputDecoration(
-                        hintText: ("Search for doctors, specialties..."),
+                        hintText: "search_doctors_hint".tr(),
                         hintStyle: TextStyle(
                           color: isDark
                               ? Colors.grey[500]
@@ -147,7 +148,7 @@ class _DoctorViewToPatientState extends State<DoctorViewToPatient> {
                 itemBuilder: (context, index) {
                   final category = specialtiesList[index];
                   return _buildCategoryChip(
-                    title: category,
+                    title: category.tr(),
                     isActive: selectedSpecialty == category,
                     isDark: isDark, // تمرير حالة الثيم للزر
                     onTap: () {
@@ -166,7 +167,7 @@ class _DoctorViewToPatientState extends State<DoctorViewToPatient> {
               child: displayDoctors.isEmpty
                   ? Center(
                       child: Text(
-                        "No doctors found.",
+                        "no_doctors_found".tr(),
                         style: TextStyle(
                           color: isDark
                               ? Colors.grey[500]

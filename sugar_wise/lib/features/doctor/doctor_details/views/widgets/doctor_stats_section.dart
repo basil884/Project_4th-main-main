@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import '../../models/doctor_details_model.dart';
 
 class DoctorStatsSection extends StatelessWidget {
@@ -13,23 +15,23 @@ class DoctorStatsSection extends StatelessWidget {
         _buildStatCard(
           context,
           Icons.star,
-          Colors.amber,
+          AppColors.warningLight,
           "${doctor.rating}",
-          "OVERALL RATING",
+          "overall_rating".tr(),
         ),
         _buildStatCard(
           context,
           Icons.work,
-          Colors.teal,
-          "${doctor.experienceYears} Years",
-          "EXPERIENCE",
+          AppColors.brandGreen,
+          "years_exp".tr(args: [doctor.experienceYears.toString()]),
+          "experience".tr(),
         ),
         _buildStatCard(
           context,
           Icons.people,
-          Colors.blue,
+          AppColors.primaryBlue,
           doctor.patientsCount,
-          "HAPPY PATIENTS",
+          "happy_patients".tr(),
         ),
       ],
     );

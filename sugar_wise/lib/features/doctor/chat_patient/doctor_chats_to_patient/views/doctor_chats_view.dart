@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sugar_wise/features/patient/chat_patient/chat_bot/view/bot_chat_sheet_view.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
+import 'package:sugar_wise/features/doctor/chat_patient/chat_bot/view/bot_chat_sheet_view.dart';
 import '../view_models/doctor_chats_view_model.dart';
 import 'widgets/chat_search_bar.dart';
 import 'widgets/chat_thread_card.dart';
@@ -49,7 +50,7 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.scaffoldBackground,
       // 🔥 تم استخدام Stack لكي نضع البوت العائم فوق محتوى الشاشة
       body: Stack(
         children: [
@@ -69,7 +70,7 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
                             child: Text(
                               "No chats found",
                               style: TextStyle(
-                                color: isDark ? Colors.grey[500] : Colors.grey,
+                                color: isDark ? AppColors.darkTextSecondary : Colors.grey,
                               ),
                             ),
                           )
@@ -123,17 +124,20 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
                     width: 55,
                     height: 55,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF6B48FF),
+                      color: AppColors.primaryBlue,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6B48FF).withValues(alpha: 0.4),
+                          color: AppColors.primaryBlue.withValues(alpha: 0.4),
                           blurRadius: 12,
                           spreadRadius: 2,
                           offset: const Offset(0, 4),
                         ),
                       ],
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(
+                        color: isDark ? AppColors.darkSurface : Colors.white,
+                        width: 2,
+                      ),
                     ),
                     child: const Icon(
                       Icons.smart_toy_rounded,
@@ -149,14 +153,16 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[800] : Colors.white,
+                      color: isDark ? AppColors.darkSurface : Colors.white,
                       borderRadius: BorderRadius.circular(10),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 0.5) : null,
                       boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
+                        if (!isDark)
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
                       ],
                     ),
                     child: Text(
@@ -164,7 +170,7 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: isDark ? AppColors.darkTextPrimary : AppColors.textMain,
                       ),
                     ),
                   ),

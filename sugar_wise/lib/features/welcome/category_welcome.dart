@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
 
 class ItemWelcome extends StatelessWidget {
@@ -101,10 +102,9 @@ class ItemWelcome extends StatelessWidget {
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
                             color: isDark
-                                ? Colors.white
-                                : const Color(
-                                    0xFF333333,
-                                  ), // ✅ لون العنوان متجاوب
+                                ? AppColors.darkTextPrimary
+                                : AppColors
+                                      .textMain, // ✅ لون العنوان من Design System
                           ),
                         ),
                         const SizedBox(height: 15),
@@ -115,8 +115,9 @@ class ItemWelcome extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             color: isDark
-                                ? Colors.grey[400]
-                                : const Color(0xFF757575), // ✅ لون الوصف متجاوب
+                                ? AppColors.darkTextSecondary
+                                : AppColors
+                                      .lightTextSecondary, // ✅ لون الوصف من Design System
                             height: 1.5,
                           ),
                         ),
@@ -145,21 +146,39 @@ class ItemWelcome extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(
-                        0xFF10B981,
-                      ), // ✅ لون أخضر مميز ثابت
-                      foregroundColor:
-                          Colors.white, // ✅ تأكيد أن لون النص أبيض دائماً
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
+                      padding: EdgeInsets.zero,
                     ),
-                    child: Text(
-                      (textbutton),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: AppColors.heroPrimary, // ✅ أزرق → أخضر
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryBlue.withValues(
+                              alpha: 0.35,
+                            ),
+                            blurRadius: 12,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: Text(
+                          textbutton,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),

@@ -8,8 +8,17 @@ class ThemeDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 🔥 قراءة الثيم الحالي من التطبيق لتحديد القيمة الافتراضية للـ Dropdown
-    final isDark = AdaptiveTheme.of(context).mode.isDark;
-    final String selectedTheme = isDark ? "Dark Mode" : "Light Mode";
+    final mode = AdaptiveTheme.of(context).mode;
+    final isDark = mode.isDark;
+
+    String selectedTheme;
+    if (mode == AdaptiveThemeMode.dark) {
+      selectedTheme = "Dark Mode";
+    } else if (mode == AdaptiveThemeMode.system) {
+      selectedTheme = "System Mode";
+    } else {
+      selectedTheme = "Light Mode";
+    }
 
     return Container(
       width: double.infinity,
@@ -39,6 +48,11 @@ class ThemeDropdown extends StatelessWidget {
           ).scaffoldBackgroundColor, // ✅ لون القائمة المنسدلة
           items: [
             _buildDropdownItem(
+              "System Mode",
+              Icons.brightness_auto,
+              const Color(0xff10B981),
+            ),
+            _buildDropdownItem(
               "Light Mode",
               Icons.wb_sunny_outlined,
               const Color(0xff3B82F6),
@@ -54,8 +68,10 @@ class ThemeDropdown extends StatelessWidget {
               // 🔥 تغيير الثيم الحقيقي للتطبيق بالكامل!
               if (newValue == "Dark Mode") {
                 AdaptiveTheme.of(context).setDark();
-              } else {
+              } else if (newValue == "Light Mode") {
                 AdaptiveTheme.of(context).setLight();
+              } else {
+                AdaptiveTheme.of(context).setSystem();
               }
             }
           },

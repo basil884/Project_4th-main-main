@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:sugar_wise/features/auth/forgot_password/view/set_new_password_view.dart';
@@ -40,7 +41,7 @@ class _VerificationBodyState extends State<_VerificationBody> {
     final viewModel = Provider.of<VerificationViewModel>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF374955),
+      backgroundColor: AppColors.darkSurface,
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -81,7 +82,7 @@ class _VerificationBodyState extends State<_VerificationBody> {
                     ),
                     child: const Icon(
                       Icons.verified_user_outlined,
-                      color: Color(0xFF00BFA5), // لون الدرع
+                      color: AppColors.brandGreen, // لون الدرع
                       size: 40,
                     ),
                   ),
@@ -117,7 +118,7 @@ class _VerificationBodyState extends State<_VerificationBody> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF00BFA5),
+                      color: AppColors.brandGreen,
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -247,7 +248,7 @@ class _VerificationBodyState extends State<_VerificationBody> {
                               : "Resend in ${viewModel.timerSeconds}s",
                           style: TextStyle(
                             color: viewModel.canResend
-                                ? const Color(0xFF00BFA5)
+                                ? AppColors.brandGreen
                                 : Colors.grey,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -263,7 +264,7 @@ class _VerificationBodyState extends State<_VerificationBody> {
                     child: const Text(
                       "Wrong email address?",
                       style: TextStyle(
-                        color: Color(0xFF00BFA5),
+                        color: AppColors.brandGreen,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
