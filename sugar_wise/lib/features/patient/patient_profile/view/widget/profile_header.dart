@@ -4,6 +4,7 @@ import 'package:sugar_wise/features/patient/patient_profile/edit_profile_patient
 import 'package:sugar_wise/features/patient/patient_profile/models/patient_profile_model.dart';
 import 'package:provider/provider.dart';
 import 'package:sugar_wise/features/patient/patient_profile/view_models/profile_view_model.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 
 class ProfileHeader extends StatelessWidget {
   final PatientProfileModel patient;
@@ -26,7 +27,10 @@ class ProfileHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF6B48FF), Color(0xFFFF5E3A)],
+          colors: [
+            Color(0xFF2F80ED), // أزرق حيوي وعميق
+            Color(0xFF56CCF2), // سماوي/سيان فاتح ومنعش
+          ],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),

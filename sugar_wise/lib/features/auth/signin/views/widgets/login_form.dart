@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/core/custom_text_field.dart';
 import 'package:sugar_wise/features/auth/forgot_password/view/forgot_password_view.dart';
 import 'package:sugar_wise/features/auth/register/ask_registration/views/register_view.dart';
 import 'package:sugar_wise/features/auth/signin/view_models/login_view_model.dart';
-import 'package:sugar_wise/features/doctor/doctor_dashboard/view/doctor_dashboard.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/doctor_home.dart';
 import 'package:sugar_wise/features/patient/bluetooth_scanner/view/connect_sensor_view.dart';
 
 class LoginForm extends StatefulWidget {
@@ -16,7 +17,6 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  // تهيئة مساحة التخزين الآمنة
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
     aOptions: AndroidOptions(),
   );
@@ -32,11 +32,9 @@ class _LoginFormState extends State<LoginForm> {
     _loadSavedCredentials();
   }
 
-  // استرجاع البيانات عند فتح الشاشة
   Future<void> _loadSavedCredentials() async {
-    String? savedEmail = await _secureStorage.read(key: 'email');
-    String? savedPassword = await _secureStorage.read(key: 'password');
-
+    final savedEmail = await _secureStorage.read(key: 'email');
+    final savedPassword = await _secureStorage.read(key: 'password');
     if (savedEmail != null && savedPassword != null) {
       setState(() {
         _emailController.text = savedEmail;
@@ -56,31 +54,32 @@ class _LoginFormState extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<LoginViewModel>(context);
-    const Color primaryGreen = Color(0xFF10B981);
-
-    // 🔥 استخراج حالة الثيم
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // ألوان النصوص حسب الثيم
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor, // ✅ لون الكارت يتجاوب مع الثيم
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         borderRadius: BorderRadius.circular(20),
-        border: isDark
-            ? Border.all(color: Colors.grey.shade800)
-            : null, // إطار خفيف للمظلم
+        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
         boxShadow: [
-          if (!isDark) // ✅ إخفاء الظل في الوضع المظلم
+          if (!isDark)
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 20,
-              spreadRadius: 5,
+              spreadRadius: 4,
             ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ⚠️ ملاحظة: تأكد أن ملف CustomTextField يدعم الوضع المظلم أيضاً (تغيير لون النص والخلفية بداخله)
+          // ─── حقول الإدخال ───────────────────────────────────────
           CustomTextField(
             controller: _emailController,
             label: "Email Address",
@@ -99,7 +98,7 @@ class _LoginFormState extends State<LoginForm> {
           ),
           const SizedBox(height: 10),
 
-          // 🔥 دمجنا "تذكرني" مع "نسيت كلمة المرور" في سطر واحد أنيق
+          // ─── تذكرني + نسيت كلمة المرور ──────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -110,44 +109,32 @@ class _LoginFormState extends State<LoginForm> {
                     height: 24,
                     child: Checkbox(
                       value: _rememberMe,
-                      activeColor: primaryGreen,
+                      activeColor: AppColors.primaryBlue,
                       side: BorderSide(
                         color: isDark
-                            ? Colors.grey.shade500
-                            : Colors.grey.shade600, // ✅ تحديد مربع الاختيار
+                            ? AppColors.darkTextSecondary
+                            : Colors.grey.shade500,
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          _rememberMe = value ?? false;
-                        });
-                      },
+                      onChanged: (value) =>
+                          setState(() => _rememberMe = value ?? false),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     "Remember me",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark
-                          ? Colors.grey.shade400
-                          : Colors.grey, // ✅ لون النص متجاوب
-                    ),
+                    style: TextStyle(fontSize: 13, color: textSecondary),
                   ),
                 ],
               ),
               TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ForgotPasswordView(),
-                    ),
-                  );
-                },
-                child: const Text(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ForgotPasswordView()),
+                ),
+                child: Text(
                   "Forgot password?",
                   style: TextStyle(
-                    color: primaryGreen,
+                    color: AppColors.primaryBlue,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
@@ -155,201 +142,173 @@ class _LoginFormState extends State<LoginForm> {
               ),
             ],
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 18),
 
-          // 🔥 Sign In Button
+          // ─── زر Sign In بـ Gradient ──────────────────────────────
           SizedBox(
             width: double.infinity,
             height: 55,
             child: ElevatedButton(
               onPressed: viewModel.isLoading
                   ? null
-                  : () async {
-                      final email = _emailController.text.trim();
-                      final password = _passwordController.text;
-
-                      if (email.isEmpty || password.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Please enter both email and password",
-                            ),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
-                        return;
-                      }
-
-                      // 1. الدخول عبر ViewModel
-                      final role = await viewModel.login(email, password);
-
-                      if (!context.mounted) return;
-
-                      // 2. إذا نجح الدخول، نقوم بتفعيل أو إلغاء "تذكرني"
-                      if (_rememberMe) {
-                        await _secureStorage.write(key: 'email', value: email);
-                        await _secureStorage.write(
-                          key: 'password',
-                          value: password,
-                        );
-                      } else {
-                        await _secureStorage.delete(key: 'email');
-                        await _secureStorage.delete(key: 'password');
-                      }
-
-                      // 3. التوجيه
-                      if (role == 'patient') {
-                        if (!context.mounted) return;
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ConnectSensorView(),
-                          ),
-                        );
-                      } else if (role == 'doctor') {
-                        if (!context.mounted) return;
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const DoctorDashboard(),
-                          ),
-                        );
-                      } else {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              viewModel.errorMessage ?? "Invalid credentials",
-                            ),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
-                      }
-                    },
+                  : () => _handleLogin(context, viewModel),
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryGreen,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
                 elevation: 0,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
-              child: viewModel.isLoading
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text(
-                      "Sign In",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+              child: Ink(
+                decoration: BoxDecoration(
+                  gradient: viewModel.isLoading
+                      ? null
+                      : AppColors.heroPrimary, // 🔵→🟢 gradient
+                  color: viewModel.isLoading
+                      ? (isDark ? AppColors.darkBorder : Colors.grey.shade300)
+                      : null,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: viewModel.isLoading
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: AppColors.primaryBlue.withValues(
+                              alpha: 0.35,
+                            ),
+                            blurRadius: 12,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                ),
+                child: Container(
+                  alignment: Alignment.center,
+                  child: viewModel.isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "Sign In",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
             ),
           ),
-          Divider(
-            color: isDark ? Colors.grey.shade800 : Colors.grey[300],
-            thickness: 1,
-          ),
-          Row(
-            mainAxisAlignment: .spaceAround,
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryGreen,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {},
-                child: Row(
-                  children: [
-                    const Text("Google", style: TextStyle(color: Colors.white)),
-                    const Icon(
-                      Icons.g_mobiledata,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ],
-                ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryGreen,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {},
-                child: Row(
-                  children: [
-                    const Text(
-                      "Facebook",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    const Icon(Icons.facebook, color: Colors.white, size: 20),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 25),
-          // Divider (OR)
+          const SizedBox(height: 20),
+
+          // ─── OR Divider ──────────────────────────────────────────
           Row(
             children: [
               Expanded(
                 child: Divider(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey[300],
+                  color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
                   thickness: 1,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Text(
-                  "or",
+                  "OR",
                   style: TextStyle(
-                    color: isDark ? Colors.grey.shade500 : Colors.grey[400],
+                    color: textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1,
                   ),
                 ),
               ),
               Expanded(
                 child: Divider(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey[300],
+                  color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
                   thickness: 1,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 25),
-          // Sign Up Link
-          GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const RegisterView()),
-            ),
-            child: RichText(
-              text: TextSpan(
-                text: "Don't have an account? ",
-                style: TextStyle(
-                  color: isDark
-                      ? Colors.grey.shade400
-                      : Colors.grey, // ✅ لون النص متجاوب
-                  fontSize: 14,
+          const SizedBox(height: 18),
+
+          // ─── أزرار Google و Facebook ─────────────────────────────
+          Row(
+            children: [
+              // زر Google
+              Expanded(
+                child: _SocialButton(
+                  isDark: isDark,
+                  onPressed: () {},
+                  icon: _GoogleIcon(),
+                  label: "Google",
+                  labelColor: isDark
+                      ? AppColors.darkTextPrimary
+                      : Colors.black87,
+                  bgColor: isDark
+                      ? AppColors.darkSurface
+                      : AppColors.lightSurface,
+                  borderColor: isDark
+                      ? AppColors.darkBorder
+                      : Colors.grey.shade300,
                 ),
-                children: const [
-                  TextSpan(
-                    text: "Sign up",
-                    style: TextStyle(
-                      color: primaryGreen,
-                      fontWeight: FontWeight.bold,
-                    ),
+              ),
+              const SizedBox(width: 12),
+              // زر Facebook
+              Expanded(
+                child: _SocialButton(
+                  isDark: isDark,
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.facebook_rounded,
+                    color: Color(0xFF1877F2),
+                    size: 22,
                   ),
-                ],
+                  label: "Facebook",
+                  labelColor: isDark
+                      ? AppColors.darkTextPrimary
+                      : Colors.black87,
+                  bgColor: isDark
+                      ? AppColors.darkSurface
+                      : AppColors.lightSurface,
+                  borderColor: isDark
+                      ? AppColors.darkBorder
+                      : Colors.grey.shade300,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+
+          // ─── Sign Up Link ────────────────────────────────────────
+          Center(
+            child: GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RegisterView()),
+              ),
+              child: RichText(
+                text: TextSpan(
+                  text: "Don't have an account? ",
+                  style: TextStyle(color: textSecondary, fontSize: 14),
+                  children: [
+                    TextSpan(
+                      text: "Sign up",
+                      style: TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -357,4 +316,158 @@ class _LoginFormState extends State<LoginForm> {
       ),
     );
   }
+
+  // ─── منطق تسجيل الدخول ──────────────────────────────────────────
+  Future<void> _handleLogin(
+    BuildContext context,
+    LoginViewModel viewModel,
+  ) async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter both email and password"),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+
+    final role = await viewModel.login(email, password);
+    if (!context.mounted) return;
+
+    if (_rememberMe) {
+      await _secureStorage.write(key: 'email', value: email);
+      await _secureStorage.write(key: 'password', value: password);
+    } else {
+      await _secureStorage.delete(key: 'email');
+      await _secureStorage.delete(key: 'password');
+    }
+
+    if (!context.mounted) return;
+
+    if (role == 'patient') {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const ConnectSensorView()),
+        (route) => false,
+      );
+    } else if (role == 'doctor') {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const DoctorHome()),
+        (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(viewModel.errorMessage ?? "Invalid credentials"),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+}
+
+// ─── ويدجت زر Social مستقل ────────────────────────────────────────────
+class _SocialButton extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onPressed;
+  final Widget icon;
+  final String label;
+  final Color labelColor;
+  final Color bgColor;
+  final Color borderColor;
+
+  const _SocialButton({
+    required this.isDark,
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    required this.labelColor,
+    required this.bgColor,
+    required this.borderColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        backgroundColor: bgColor,
+        side: BorderSide(color: borderColor, width: 1.5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        elevation: 0,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          icon,
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: labelColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── أيقونة Google مخصصة ──────────────────────────────────────────────
+class _GoogleIcon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 20,
+      height: 20,
+      child: CustomPaint(painter: _GooglePainter()),
+    );
+  }
+}
+
+class _GooglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    // دائرة خلفية بيضاء
+    paint.color = Colors.white;
+    canvas.drawCircle(center, radius, paint);
+
+    // رسم الحرف G بالألوان
+    final rect = Rect.fromCircle(center: center, radius: radius * 0.85);
+
+    // أحمر
+    paint.color = const Color(0xFFEA4335);
+    canvas.drawArc(rect, -1.57, 1.57, true, paint);
+
+    // أصفر
+    paint.color = const Color(0xFFFBBC05);
+    canvas.drawArc(rect, 0, 1.57, true, paint);
+
+    // أخضر
+    paint.color = const Color(0xFF34A853);
+    canvas.drawArc(rect, 1.57, 1.57, true, paint);
+
+    // أزرق
+    paint.color = const Color(0xFF4285F4);
+    canvas.drawArc(rect, -3.14, 1.57, true, paint);
+
+    // دائرة داخلية بيضاء (تأثير G)
+    paint.color = Colors.white;
+    canvas.drawCircle(center, radius * 0.5, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

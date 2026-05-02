@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 
 class PatientRegistrationViewModel extends ChangeNotifier {
   // ❌ تم حذف PageController تماماً لأنه يسبب مشاكل مع الكيبورد
@@ -106,7 +107,7 @@ class PatientRegistrationViewModel extends ChangeNotifier {
             "Profile Created Successfully!",
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: Color(0xFF00C897),
+          backgroundColor: AppColors.brandGreen,
         ),
       );
     }

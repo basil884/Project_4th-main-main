@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/doctor_details/view_models/doctor_details_view_model.dart';
 import 'package:sugar_wise/features/patient/chat_patient/patient_chats_to_doctor/views/patient_chats_view.dart';
 import 'package:sugar_wise/features/patient/chat_patient/patient_chats_to_doctor/models/chat_thread_model.dart';
@@ -22,7 +23,7 @@ class DoctorProfileHeader extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: Colors.blue[50],
+              backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
               backgroundImage: AssetImage(doctor.imagePath),
               onBackgroundImageError: (_, _) {},
               child: doctor.imagePath.isEmpty
@@ -36,7 +37,7 @@ class DoctorProfileHeader extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(2),
-                child: const Icon(Icons.verified, color: Colors.blue, size: 24),
+                child: const Icon(Icons.verified, color: AppColors.primaryBlue, size: 24),
               ),
           ],
         ),
@@ -70,7 +71,7 @@ class DoctorProfileHeader extends StatelessWidget {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: Colors.blue,
+            color: AppColors.primaryBlue,
           ),
         ),
         const SizedBox(height: 2),
@@ -104,7 +105,7 @@ class DoctorProfileHeader extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: viewModel.isFollowing
                     ? Colors.grey[300]
-                    : const Color(0xFF1976D2),
+                    : AppColors.primaryBlue,
                 foregroundColor: viewModel.isFollowing
                     ? Colors.black
                     : Colors.white,
@@ -152,8 +153,8 @@ class DoctorProfileHeader extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE3F2FD),
-                foregroundColor: const Color(0xFF1976D2),
+                backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                foregroundColor: AppColors.primaryBlue,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 30,

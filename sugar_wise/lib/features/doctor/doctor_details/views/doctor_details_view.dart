@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/doctor_details/models/doctor_details_model.dart';
 import 'package:sugar_wise/features/doctor/doctor_details/views/widgets/clinic_location_card.dart';
 import '../view_models/doctor_details_view_model.dart';
@@ -46,7 +48,7 @@ class _DoctorDetailsContent extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
-            "Doctor Details",
+            "doctor_details_title".tr(),
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black,
               fontWeight: FontWeight.bold,
@@ -74,8 +76,8 @@ class _DoctorDetailsContent extends StatelessWidget {
               // 2. نجوم التقييم اليدوية
               const SizedBox(height: 10),
               // 2. نجوم التقييم اليدوية التفاعلية
-              const Text(
-                "RATE THIS DOCTOR",
+              Text(
+                "rate_doctor_label".tr(),
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 12,
@@ -90,13 +92,13 @@ class _DoctorDetailsContent extends StatelessWidget {
               // 3. شريط التبويبات (Tab Bar)
               // 3. شريط التبويبات (Tab Bar)
               TabBar(
-                labelColor: const Color(0xFF1976D2),
+                labelColor: AppColors.primaryBlue,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: const Color(0xFF1976D2),
+                indicatorColor: AppColors.primaryBlue,
                 indicatorWeight: 3,
-                tabs: const [
-                  Tab(text: "About Doctor"),
-                  Tab(text: "Clinics & Locations"),
+                tabs: [
+                  Tab(text: "about_doctor_tab".tr()),
+                  Tab(text: "clinics_locations_tab".tr()),
                 ],
               ),
               const SizedBox(height: 20),

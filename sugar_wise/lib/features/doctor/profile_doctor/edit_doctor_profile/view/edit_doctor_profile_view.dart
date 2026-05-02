@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/profile_doctor/edit_doctor_profile/view_model/edit_doctor_profile_view_model.dart';
 
 class EditDoctorProfileView extends StatelessWidget {
@@ -61,21 +63,18 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<EditDoctorProfileViewModel>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : const Color(0xFFF4F6F9),
       body: Stack(
         children: [
           // 1. الخلفية الملونة العلوية
           Container(
             height: 200,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF10B981)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+            decoration: const BoxDecoration(gradient: AppColors.heroPrimary),
           ),
 
           // 2. المحتوى
@@ -85,19 +84,19 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
               child: Column(
                 children: [
                   // الهيدر (العنوان + أزرار الحفظ والإلغاء)
-                  _buildHeaderCard(context, viewModel),
+                  _buildHeaderCard(context, viewModel, isDark),
                   const SizedBox(height: 20),
 
                   // كارت الصورة
-                  _buildImageCard(viewModel),
+                  _buildImageCard(viewModel, isDark),
                   const SizedBox(height: 20),
 
                   // كارت البيانات الأساسية
-                  _buildBasicInfoCard(),
+                  _buildBasicInfoCard(isDark),
                   const SizedBox(height: 20),
 
                   // كارت النبذة (About Me)
-                  _buildAboutMeCard(),
+                  _buildAboutMeCard(isDark),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -113,23 +112,32 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
   Widget _buildHeaderCard(
     BuildContext context,
     EditDoctorProfileViewModel viewModel,
+    bool isDark,
   ) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(15),
+        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Edit Profile",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          Text(
+            "edit_profile".tr(),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: isDark ? AppColors.darkTextPrimary : Colors.black,
+            ),
           ),
-          const Text(
-            "Update your professional details and bio.",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+          Text(
+            "edit_profile_desc".tr(),
+            style: TextStyle(
+              color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+              fontSize: 12,
+            ),
           ),
           SizedBox(height: 10),
           Row(
@@ -138,13 +146,21 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
             children: [
               OutlinedButton.icon(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, size: 16, color: Colors.grey),
-                label: const Text(
-                  "Cancel",
-                  style: TextStyle(color: Colors.grey),
+                icon: Icon(
+                  Icons.close,
+                  size: 16,
+                  color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                ),
+                label: Text(
+                  "cancel".tr(),
+                  style: TextStyle(
+                    color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                  ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.grey.shade300),
+                  side: BorderSide(
+                    color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -184,13 +200,13 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
                         ),
                       )
                     : const Icon(Icons.save_alt, size: 16),
-                label: const Text(
-                  "Save\nCHANGES",
+                label: Text(
+                  "save_changes".tr().replaceAll(" ", "\n").toUpperCase(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 10),
+                  style: const TextStyle(fontSize: 10),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: AppColors.primaryBlue,
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -201,19 +217,23 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
     );
   }
 
-  Widget _buildImageCard(EditDoctorProfileViewModel viewModel) {
+  Widget _buildImageCard(EditDoctorProfileViewModel viewModel, bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 25),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(15),
+        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
       ),
       child: Column(
         children: [
-          const Text(
-            "Profile Picture",
-            style: TextStyle(fontWeight: FontWeight.bold),
+          Text(
+            "profile_picture_label".tr(),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isDark ? AppColors.darkTextPrimary : Colors.black,
+            ),
           ),
           const SizedBox(height: 15),
           GestureDetector(
@@ -229,53 +249,65 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
             ),
           ),
           const SizedBox(height: 15),
-          const Text(
-            "Click image to upload.",
-            style: TextStyle(color: Colors.grey),
+          Text(
+            "click_to_upload_img".tr(),
+            style: TextStyle(
+              color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+            ),
           ),
-          const Text(
-            "JPG, PNG OR GIF. MAX 5MB.",
-            style: TextStyle(color: Colors.grey, fontSize: 10),
+          Text(
+            "img_format_limit".tr(),
+            style: TextStyle(
+              color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+              fontSize: 10,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBasicInfoCard() {
+  Widget _buildBasicInfoCard(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(15),
+        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.person_outline, color: Color(0xFF3B82F6)),
-              SizedBox(width: 10),
+              const Icon(Icons.person_outline, color: AppColors.primaryBlue),
+              const SizedBox(width: 10),
               Text(
-                "Basic Information",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                "basic_info_label".tr(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          _buildInputField("FIRST NAME", _firstNameCtrl),
+          _buildInputField("first_name_label".tr(), _firstNameCtrl, isDark),
           const SizedBox(height: 15),
-          _buildInputField("LAST NAME", _lastNameCtrl),
+          _buildInputField("last_name_label".tr(), _lastNameCtrl, isDark),
           const SizedBox(height: 15),
           _buildInputField(
-            "JOB TITLE",
+            "job_title_label".tr(),
             _jobTitleCtrl,
+            isDark,
             icon: Icons.person_outline,
           ),
           const SizedBox(height: 15),
           _buildInputField(
-            "SPECIALTY",
+            "specialty_label".tr(),
             _specialtyCtrl,
+            isDark,
             icon: Icons.apartment_outlined,
           ),
         ],
@@ -283,28 +315,36 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
     );
   }
 
-  Widget _buildAboutMeCard() {
+  Widget _buildAboutMeCard(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(15),
+        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.description_outlined, color: Color(0xFF3B82F6)),
-              SizedBox(width: 10),
+              const Icon(
+                Icons.description_outlined,
+                color: AppColors.primaryBlue,
+              ),
+              const SizedBox(width: 10),
               Text(
-                "About Me",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                "about_me_label".tr(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          _buildInputField("BIOGRAPHY", _bioCtrl, isMultiline: true),
+          _buildInputField("biography_label".tr(), _bioCtrl, isDark, isMultiline: true),
         ],
       ),
     );
@@ -313,7 +353,8 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
   // أداة مساعدة لرسم الحقول بشكل موحد
   Widget _buildInputField(
     String label,
-    TextEditingController controller, {
+    TextEditingController controller,
+    bool isDark, {
     IconData? icon,
     bool isMultiline = false,
   }) {
@@ -322,34 +363,48 @@ class _EditDoctorProfileBodyState extends State<_EditDoctorProfileBody> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.bold,
-            color: Colors.grey,
+            color: isDark ? AppColors.darkTextSecondary : Colors.grey,
           ),
         ),
         const SizedBox(height: 5),
         TextField(
           controller: controller,
           maxLines: isMultiline ? 5 : 1,
+          style: TextStyle(
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textMain,
+          ),
           decoration: InputDecoration(
-            prefixIcon: icon != null ? Icon(icon, color: Colors.grey) : null,
+            prefixIcon: icon != null
+                ? Icon(
+                    icon,
+                    color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                  )
+                : null,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 15,
               vertical: 15,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+              borderSide: const BorderSide(color: AppColors.primaryBlue),
             ),
+            fillColor: isDark ? AppColors.darkSurface : Colors.white,
+            filled: true,
           ),
         ),
       ],

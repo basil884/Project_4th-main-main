@@ -77,7 +77,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo/logoIcon.png"
+  image_path: "assets/images/logo/Sugar_Wise_Logo.jpeg"
   remove_alpha_ios: true # 💡 سطر مهم جداً لمنع الكراش أو ظهور خلفية سوداء قبيحة في الآيفون# following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/notfications_doctor/model/model.dart';
 import 'package:sugar_wise/features/doctor/notfications_doctor/view_model/view_model.dart';
 
@@ -40,7 +42,7 @@ class _NotificationsBody extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                "Notifications",
+                "notifications_title".tr(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -54,7 +56,7 @@ class _NotificationsBody extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                "Stay updated with your patients and clinic activities",
+                "notifications_subtitle".tr(),
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark
@@ -76,7 +78,7 @@ class _NotificationsBody extends StatelessWidget {
               child: viewModel.filteredNotifications.isEmpty
                   ? Center(
                       child: Text(
-                        "No notifications here! 🎉",
+                        "no_notifications".tr(),
                         style: TextStyle(
                           color: isDark ? Colors.grey.shade500 : Colors.grey,
                           fontSize: 16,
@@ -136,15 +138,15 @@ class _NotificationsBody extends StatelessWidget {
             icon: Icon(
               Icons.done_all,
               color: hasUnread
-                  ? const Color(0xFF2F66D0)
-                  : (isDark ? Colors.grey.shade700 : Colors.grey),
+                  ? const Color(0xFF2DA1D7)
+                    : (isDark ? Colors.grey.shade700 : Colors.grey),
               size: 18,
             ),
             label: Text(
-              "Mark as read",
+              "mark_as_read".tr(),
               style: TextStyle(
                 color: hasUnread
-                    ? const Color(0xFF2F66D0)
+                  ? const Color(0xFF2DA1D7)
                     : (isDark ? Colors.grey.shade700 : Colors.grey),
                 fontWeight: FontWeight.bold,
               ),
@@ -162,14 +164,14 @@ class _NotificationsBody extends StatelessWidget {
       child: Row(
         children: [
           _buildTabItem(
-            "All",
+            "all_tab".tr(),
             viewModel.selectedTab == 'All',
             () => viewModel.setTab('All'),
             isDark,
           ),
           const SizedBox(width: 25),
           _buildTabItem(
-            "Unread",
+            "unread_tab".tr(),
             viewModel.selectedTab == 'Unread',
             () => viewModel.setTab('Unread'),
             isDark,
@@ -233,7 +235,7 @@ class _NotificationsBody extends StatelessWidget {
             height: 3,
             width: 30,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF2F66D0) : Colors.transparent,
+              color: isSelected ? AppColors.primaryBlue : Colors.transparent,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(3),
               ),
@@ -254,12 +256,8 @@ class _NotificationsBody extends StatelessWidget {
 
     // 🔥 تعديل ألوان الخلفية لتبدو أنيقة في الوضع المظلم والفاتح
     Color unreadBgColor = isDark
-        ? const Color(0xFF2F66D0).withValues(
-            alpha: 0.15,
-          ) // أزرق غامق للغير مقروء في الداكن
-        : const Color(
-            0xFF2F66D0,
-          ).withValues(alpha: 0.04); // أزرق فاتح للغير مقروء في الفاتح
+        ? AppColors.primaryBlue.withValues(alpha: 0.15)
+        : AppColors.primaryBlue.withValues(alpha: 0.04);
 
     Color readBgColor = Colors
         .transparent; // الأفضل أن يكون شفافاً ليأخذ لون الشاشة الخلفية مباشرة
@@ -322,7 +320,7 @@ class _NotificationsBody extends StatelessWidget {
                               ? (isDark
                                     ? Colors.grey.shade500
                                     : Colors.grey.shade500)
-                              : const Color(0xFF2F66D0),
+                              : AppColors.primaryBlue,
                           fontWeight: notification.isRead
                               ? FontWeight.normal
                               : FontWeight.bold,
@@ -356,7 +354,7 @@ class _NotificationsBody extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF2F66D0),
+                  color: AppColors.primaryBlue,
                   shape: BoxShape.circle,
                 ),
               ),

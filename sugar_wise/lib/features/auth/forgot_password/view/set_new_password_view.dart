@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:sugar_wise/features/auth/forgot_password/view_model/set_new_password_view_model.dart';
 
@@ -69,7 +70,7 @@ class _SetNewPasswordBodyState extends State<_SetNewPasswordBody> {
         child: Text("Reset Password"),
       )
       */
-      backgroundColor: const Color(0xFF374955),
+      backgroundColor: AppColors.darkSurface,
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -100,7 +101,7 @@ class _SetNewPasswordBodyState extends State<_SetNewPasswordBody> {
                     ),
                     child: const Icon(
                       Icons.lock_outline,
-                      color: Color(0xFF2962FF), // لون أزرق للقفل
+                      color: AppColors.primaryBlue, // لون أزرق للقفل
                       size: 35,
                     ),
                   ),
@@ -175,7 +176,7 @@ class _SetNewPasswordBodyState extends State<_SetNewPasswordBody> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2962FF)),
+                        borderSide: const BorderSide(color: AppColors.primaryBlue),
                       ),
                     ),
                   ),
@@ -229,7 +230,7 @@ class _SetNewPasswordBodyState extends State<_SetNewPasswordBody> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2962FF)),
+                        borderSide: const BorderSide(color: AppColors.primaryBlue),
                       ),
                     ),
                   ),
@@ -271,7 +272,7 @@ class _SetNewPasswordBodyState extends State<_SetNewPasswordBody> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF2962FF), Color(0xFF00BFA5)],
+                          colors: [AppColors.primaryBlue, AppColors.brandGreen],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                         ),

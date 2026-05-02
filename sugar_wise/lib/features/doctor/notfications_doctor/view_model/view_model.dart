@@ -85,12 +85,17 @@ class NotificationsViewModel extends ChangeNotifier {
     notifyListeners(); // سيتم تصفير العداد وتحديث الشاشة فوراً
   }
 
-  // 6. قراءة إشعار واحد عند الضغط عليه
   void markAsRead(String id) {
     final index = _notifications.indexWhere((n) => n.id == id);
     if (index != -1 && !_notifications[index].isRead) {
       _notifications[index].isRead = true;
       notifyListeners();
     }
+  }
+
+  // 7. إضافة إشعار جديد
+  void addNotification(NotificationModel notification) {
+    _notifications.insert(0, notification);
+    notifyListeners();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/auth/forgot_password/view/verification_view.dart';
 import 'package:sugar_wise/features/auth/forgot_password/view_model/forgot_password_view_model.dart';
 
@@ -38,7 +39,7 @@ class _ForgotPasswordBodyState extends State<_ForgotPasswordBody> {
 
     return Scaffold(
       // لون الخلفية الداكن حول الكارت
-      backgroundColor: const Color(0xFF374955),
+      backgroundColor: AppColors.darkSurface,
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -67,9 +68,7 @@ class _ForgotPasswordBodyState extends State<_ForgotPasswordBody> {
                       height: 4,
                       width: 60,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2962FF), Color(0xFF00BFA5)],
-                        ),
+                        gradient: AppColors.heroPrimary,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -80,12 +79,12 @@ class _ForgotPasswordBodyState extends State<_ForgotPasswordBody> {
                   Container(
                     padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEBF3FF),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.email_outlined,
-                      color: Color(0xFF2962FF),
+                      color: AppColors.primaryBlue,
                       size: 35,
                     ),
                   ),
@@ -147,7 +146,7 @@ class _ForgotPasswordBodyState extends State<_ForgotPasswordBody> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF2962FF)),
+                        borderSide: const BorderSide(color: AppColors.primaryBlue),
                       ),
                     ),
                   ),
@@ -179,17 +178,11 @@ class _ForgotPasswordBodyState extends State<_ForgotPasswordBody> {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2962FF), Color(0xFF00BFA5)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
+                        gradient: AppColors.heroPrimary,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(
-                              0xFF00BFA5,
-                            ).withValues(alpha: 0.3),
+                            color: AppColors.brandGreen.withValues(alpha: 0.3),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           ),

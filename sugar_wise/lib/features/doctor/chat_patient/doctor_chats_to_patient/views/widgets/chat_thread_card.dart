@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/chat_thread_model.dart';
-import '../chat_view.dart'; // ✅ استدعاء شاشة الشات الجديدة
+import 'package:sugar_wise/core/theme/app_colors.dart';
+import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/models/chat_thread_model.dart';
+import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/views/chat_view.dart';
 
 class ChatThreadCard extends StatelessWidget {
   final ChatThreadModel chat;
@@ -23,14 +24,11 @@ class ChatThreadCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          // ✅ لون مريح جداً للعين في كلا الوضعين (رمادي زيتي هادئ للمظلم، وأخضر فاتح جداً للفاتح)
-          color: isDark ? const Color(0xFF262B27) : const Color(0xFFF1FAF2),
+          color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(15),
-
-          // ✅ السحر هنا: إطار شفاف جداً يحدد حواف الكارت بوضوح تام في الوضع المظلم
           border: isDark
-              ? Border.all(color: Colors.white.withValues(alpha: 0.05))
-              : null,
+              ? Border.all(color: AppColors.darkBorder)
+              : Border.all(color: Colors.grey.shade100),
 
           boxShadow: [
             if (!isDark) // الظل يظهر فقط في الوضع الفاتح
@@ -48,13 +46,13 @@ class ChatThreadCard extends StatelessWidget {
               radius: 30,
               backgroundImage: AssetImage(chat.doctorImage),
               backgroundColor: isDark
-                  ? const Color(0xFF1E221F)
-                  : Colors.white, // ✅ خلفية أغمق قليلاً للصورة في المظلم
+                  ? AppColors.darkBackground
+                  : Colors.grey[200],
               onBackgroundImageError: (_, _) {},
               child: chat.doctorImage.isEmpty
                   ? Icon(
                       Icons.person,
-                      color: isDark ? Colors.grey[500] : Colors.grey,
+                      color: isDark ? AppColors.darkTextSecondary : Colors.grey,
                     )
                   : null,
             ),
@@ -70,10 +68,9 @@ class ChatThreadCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      // ✅ لون النص يتغير ليكون مريحاً
                       color: isDark
-                          ? Colors.white.withValues(alpha: 0.9)
-                          : const Color(0xFF2E3D30),
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textMain,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -81,7 +78,7 @@ class ChatThreadCard extends StatelessWidget {
                     chat.lastMessage,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      color: isDark ? AppColors.darkTextSecondary : Colors.grey[600],
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

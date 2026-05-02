@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart'; // مكتبة اختيار الملفات
+import 'package:intl/intl.dart';
 import 'package:sugar_wise/features/patient/laptests/lab_tests_view_model/lab_tests_view_model.dart';
 import 'package:sugar_wise/features/patient/laptests/model/lap_test_model.dart';
 
@@ -51,9 +52,6 @@ class LabTestsView extends StatelessWidget {
               (report) => _buildReportCard(context, viewModel, report, isDark),
             ),
             const SizedBox(height: 10),
-
-            _buildScanSection(context, viewModel, isDark),
-            const SizedBox(height: 40),
           ],
         ),
       ),
@@ -61,33 +59,46 @@ class LabTestsView extends StatelessWidget {
   }
 
   Widget _buildUploadButton(BuildContext context, LabTestsViewModel viewModel) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 55,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => const UploadReportBottomSheet(),
-          );
-        },
-        icon: const Icon(Icons.cloud_upload_outlined, color: Colors.white),
-        label: Text(
-          "upload_report".tr(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2DA1D7), Color(0xFF8EC641)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2F66D0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const UploadReportBottomSheet(),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.cloud_upload_outlined, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  "upload_report".tr(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
-          elevation: 2,
         ),
       ),
     );
@@ -348,73 +359,6 @@ class LabTestsView extends StatelessWidget {
           fontSize: 10,
           fontWeight: FontWeight.bold,
         ),
-      ),
-    );
-  }
-
-  Widget _buildScanSection(
-    BuildContext context,
-    LabTestsViewModel viewModel,
-    bool isDark,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2F66D0).withValues(alpha: isDark ? 0.1 : 0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF2F66D0).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade900 : Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFF2F66D0).withValues(alpha: 0.3),
-              ),
-            ),
-            child: const Icon(
-              Icons.camera_alt_outlined,
-              color: Color(0xFF2F66D0),
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            "need_more".tr(),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF1D2939),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "scan_desc".tr(),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isDark ? Colors.grey.shade400 : const Color(0xFF667085),
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () => viewModel.startScanning(context),
-            child: Text(
-              "start_scanning".tr(),
-              style: const TextStyle(
-                color: Color(0xFF2F66D0),
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

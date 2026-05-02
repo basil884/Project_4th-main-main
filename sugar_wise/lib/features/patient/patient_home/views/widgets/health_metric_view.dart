@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-
 import 'package:image_picker/image_picker.dart';
 
 // ==========================================
@@ -68,27 +66,47 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: isDark
+          ? Theme.of(context).scaffoldBackgroundColor
+          : const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "Dietary Systems",
           style: TextStyle(
-            color: Color(0xFF1E293B),
+            color: isDark ? Colors.white : const Color(0xFF1E293B),
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
-          TextButton.icon(
-            onPressed: () => _showAddMealBottomSheet(context),
-            icon: const Icon(Icons.add, color: Color(0xFF1877F2), size: 18),
-            label: const Text(
-              "Add Meal",
-              style: TextStyle(
-                color: Color(0xFF1877F2),
-                fontWeight: FontWeight.bold,
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF2F80ED), // أزرق حيوي وعميق
+                  Color(0xFF56CCF2),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: TextButton.icon(
+              onPressed: () => _showAddMealBottomSheet(context),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text(
+                "Add Meal",
+                style: TextStyle(color: Colors.white),
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ),
@@ -98,11 +116,15 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
         children: [
           // 1. شريط الفلاتر (Filters)
           Container(
-            color: Colors.white,
+            color: isDark
+                ? Theme.of(context).scaffoldBackgroundColor
+                : Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: categories.map((cat) => _buildFilterChip(cat)).toList(),
+              children: categories
+                  .map((cat) => _buildFilterChip(cat, isDark))
+                  .toList(),
             ),
           ),
 
@@ -121,7 +143,7 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                     physics: const BouncingScrollPhysics(),
                     itemCount: filteredMeals.length,
                     itemBuilder: (context, index) {
-                      return _buildMealCard(filteredMeals[index]);
+                      return _buildMealCard(filteredMeals[index], isDark);
                     },
                   ),
           ),
@@ -133,7 +155,7 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
   // ---------------------------------------------------------
   // تصميم زر الفلتر
   // ---------------------------------------------------------
-  Widget _buildFilterChip(String title) {
+  Widget _buildFilterChip(String title, bool isDark) {
     final isActive = selectedCategory == title;
     return GestureDetector(
       onTap: () {
@@ -145,13 +167,17 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF1877F2) : const Color(0xFFF1F5F9),
+          color: isActive
+              ? const Color(0xFF1877F2)
+              : (isDark ? Colors.grey[800] : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           title,
           style: TextStyle(
-            color: isActive ? Colors.white : const Color(0xFF64748B),
+            color: isActive
+                ? Colors.white
+                : (isDark ? Colors.grey[300] : const Color(0xFF64748B)),
             fontWeight: FontWeight.bold,
             fontSize: 12,
           ),
@@ -163,18 +189,19 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
   // ---------------------------------------------------------
   // تصميم كارت الوجبة (كما في الصورة)
   // ---------------------------------------------------------
-  Widget _buildMealCard(MealModel meal) {
+  Widget _buildMealCard(MealModel meal, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey[900] : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
         ],
       ),
       child: Column(
@@ -205,7 +232,7 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                 top: 15,
                 right: 15,
                 child: CircleAvatar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: isDark ? Colors.grey[800] : Colors.white,
                   radius: 16,
                   child: const Icon(
                     Icons.favorite_border,
@@ -232,10 +259,12 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                           Expanded(
                             child: Text(
                               meal.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E293B),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1E293B),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -332,9 +361,12 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
   // 3. Add New Meal Bottom Sheet
   // ==========================================
   void _showAddMealBottomSheet(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final nameCtrl = TextEditingController();
     final calCtrl = TextEditingController();
     final carbsCtrl = TextEditingController();
+    final insulinCtrl = TextEditingController();
     final contentCtrl = TextEditingController();
 
     File? selectedImage; // متغير لحفظ الصورة المختارة
@@ -361,9 +393,13 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.85,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Theme.of(context).scaffoldBackgroundColor
+                    : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
               ),
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -385,13 +421,13 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Center(
+                  Center(
                     child: Text(
                       "Add New Meal",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
                       ),
                     ),
                   ),
@@ -445,10 +481,14 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                               width: double.infinity,
                               height: 160, // ارتفاع ثابت للصندوق
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF0F6FF),
+                                color: isDark
+                                    ? Colors.grey[850]
+                                    : const Color(0xFFF0F6FF),
                                 borderRadius: BorderRadius.circular(15),
                                 border: Border.all(
-                                  color: const Color(0xFF93C5FD),
+                                  color: isDark
+                                      ? Colors.grey[700]!
+                                      : const Color(0xFF93C5FD),
                                   width: 1.5,
                                 ),
                               ),
@@ -469,7 +509,9 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                                         Container(
                                           padding: const EdgeInsets.all(15),
                                           decoration: BoxDecoration(
-                                            color: Colors.blue.withValues(alpha: 0.1),
+                                            color: Colors.blue.withValues(
+                                              alpha: 0.1,
+                                            ),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(
@@ -501,10 +543,11 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                           ),
                           const SizedBox(height: 20),
 
-                          _buildInputLabel("Meal Name"),
+                          _buildInputLabel("Meal Name", isDark),
                           _buildTextField(
                             nameCtrl,
                             "e.g. Grilled Salmon Salad",
+                            isDark,
                           ),
                           const SizedBox(height: 15),
 
@@ -514,26 +557,44 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildInputLabel("Calories"),
+                                    _buildInputLabel("Calories", isDark),
                                     _buildTextField(
                                       calCtrl,
                                       "450",
+                                      isDark,
                                       suffix: "kcal",
                                       isNumber: true,
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 15),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildInputLabel("Carbs (g)"),
+                                    _buildInputLabel("Carbs (g)", isDark),
                                     _buildTextField(
                                       carbsCtrl,
                                       "32",
+                                      isDark,
                                       suffix: "g",
+                                      isNumber: true,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildInputLabel("Insulin Units", isDark),
+                                    _buildTextField(
+                                      insulinCtrl,
+                                      "2",
+                                      isDark,
+                                      suffix: "units",
                                       isNumber: true,
                                     ),
                                   ],
@@ -543,10 +604,11 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                           ),
                           const SizedBox(height: 15),
 
-                          _buildInputLabel("Meal Contents"),
+                          _buildInputLabel("Meal Contents", isDark),
                           _buildTextField(
                             contentCtrl,
                             "e.g. 100g Rice, 150g Chicken breast...",
+                            isDark,
                             maxLines: 3,
                           ),
                           const SizedBox(height: 30),
@@ -554,57 +616,75 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                           SizedBox(
                             width: double.infinity,
                             height: 55,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                if (nameCtrl.text.isEmpty ||
-                                    calCtrl.text.isEmpty ||
-                                    carbsCtrl.text.isEmpty) {
-                                  return;
-                                }
-
-                                int calories = int.tryParse(calCtrl.text) ?? 0;
-                                int carbs = int.tryParse(carbsCtrl.text) ?? 0;
-
-                                String smartCategory = 'BALANCED';
-                                if (carbs < 30) {
-                                  smartCategory = 'LOW CARB';
-                                } else if (calories > 600) {
-                                  smartCategory = 'WEIGHT GAIN';
-                                }
-
-                                final newMeal = MealModel(
-                                  id: DateTime.now().millisecondsSinceEpoch
-                                      .toString(),
-                                  name: nameCtrl.text,
-                                  // 🔥 نمرر مسار الصورة المحلية، أو صورة افتراضية إذا لم يختار صورة
-                                  imageUrl: selectedImage != null
-                                      ? selectedImage!.path
-                                      : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=800',
-                                  calories: calories,
-                                  carbs: carbs,
-                                  contents: contentCtrl.text,
-                                  category: smartCategory, insulinUnit: 5,
-                                );
-
-                                setState(() {
-                                  meals.add(newMeal);
-                                  selectedCategory = smartCategory;
-                                });
-
-                                Navigator.pop(context);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1877F2),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF2DA1D7),
+                                    Color(0xFF8EC641),
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
                                 ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                "Save Meal",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (nameCtrl.text.isEmpty ||
+                                      calCtrl.text.isEmpty ||
+                                      carbsCtrl.text.isEmpty ||
+                                      insulinCtrl.text.isEmpty)
+                                    return;
+
+                                  int calories =
+                                      int.tryParse(calCtrl.text) ?? 0;
+                                  int carbs = int.tryParse(carbsCtrl.text) ?? 0;
+                                  int insulin =
+                                      int.tryParse(insulinCtrl.text) ?? 0;
+
+                                  String smartCategory = 'BALANCED';
+                                  if (carbs < 30) {
+                                    smartCategory = 'LOW CARB';
+                                  } else if (calories > 600) {
+                                    smartCategory = 'WEIGHT GAIN';
+                                  }
+
+                                  final newMeal = MealModel(
+                                    id: DateTime.now().millisecondsSinceEpoch
+                                        .toString(),
+                                    name: nameCtrl.text,
+                                    // 🔥 نمرر مسار الصورة المحلية، أو صورة افتراضية إذا لم يختار صورة
+                                    imageUrl: selectedImage != null
+                                        ? selectedImage!.path
+                                        : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=800',
+                                    calories: calories,
+                                    carbs: carbs,
+                                    contents: contentCtrl.text,
+                                    category: smartCategory,
+                                    insulinUnit: insulin,
+                                  );
+
+                                  setState(() {
+                                    meals.add(newMeal);
+                                    selectedCategory = smartCategory;
+                                  });
+
+                                  Navigator.pop(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  "Save Meal",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
@@ -642,6 +722,8 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
   // 4. AI Meal Analysis Bottom Sheet (مع جرعة الأنسولين المقترحة)
   // ==========================================
   void _showAIDetailsBottomSheet(BuildContext context, MealModel meal) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     bool isAnalyzing = true;
     String aiReport = "";
     bool isArabic = false;
@@ -728,9 +810,13 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.7,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Theme.of(context).scaffoldBackgroundColor
+                    : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
               ),
               padding: const EdgeInsets.all(25),
               child: Column(
@@ -774,10 +860,12 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                           children: [
                             Text(
                               meal.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E293B),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1E293B),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -810,9 +898,14 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                     ],
                   ),
 
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    child: Divider(thickness: 1, color: Color(0xFFF1F5F9)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    child: Divider(
+                      thickness: 1,
+                      color: isDark
+                          ? Colors.grey[800]
+                          : const Color(0xFFF1F5F9),
+                    ),
                   ),
 
                   // منطقة عنوان الذكاء الاصطناعي مع زر التبديل (Toggle)
@@ -919,9 +1012,15 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F3FF),
+                        color: isDark
+                            ? Colors.grey[850]
+                            : const Color(0xFFF5F3FF),
                         borderRadius: BorderRadius.circular(15),
-                        border: Border.all(color: const Color(0xFFDDD6FE)),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.grey[700]!
+                              : const Color(0xFFDDD6FE),
+                        ),
                       ),
                       child: isAnalyzing
                           ? Column(
@@ -950,8 +1049,10 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                                     : TextDirection.ltr,
                                 child: Text(
                                   aiReport,
-                                  style: const TextStyle(
-                                    color: Color(0xFF4C1D95),
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.purple.shade200
+                                        : const Color(0xFF4C1D95),
                                     fontSize: 14,
                                     height: 1.6,
                                   ),
@@ -969,7 +1070,9 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF1F5F9),
+                        backgroundColor: isDark
+                            ? Colors.grey[800]
+                            : const Color(0xFFF1F5F9),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -977,8 +1080,10 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                       ),
                       child: Text(
                         isArabic ? "إغلاق" : "Close",
-                        style: const TextStyle(
-                          color: Color(0xFF475569),
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF475569),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -996,15 +1101,15 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
   // ---------------------------------------------------------
   // دوال مساعدة لرسم الحقول النصية (Inputs)
   // ---------------------------------------------------------
-  Widget _buildInputLabel(String text) {
+  Widget _buildInputLabel(String text, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 13,
-          color: Color(0xFF334155),
+          color: isDark ? Colors.grey[300] : const Color(0xFF334155),
         ),
       ),
     );
@@ -1012,7 +1117,8 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
 
   Widget _buildTextField(
     TextEditingController controller,
-    String hint, {
+    String hint,
+    bool isDark, {
     String? suffix,
     bool isNumber = false,
     int maxLines = 1,
@@ -1021,23 +1127,29 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
       controller: controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       maxLines: maxLines,
+      style: TextStyle(color: isDark ? Colors.white : Colors.black87),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+        hintStyle: TextStyle(
+          color: isDark ? Colors.grey[500] : Colors.grey,
+          fontSize: 14,
+        ),
         suffixText: suffix,
-        suffixStyle: const TextStyle(
-          color: Colors.grey,
+        suffixStyle: TextStyle(
+          color: isDark ? Colors.grey[400] : Colors.grey,
           fontWeight: FontWeight.bold,
         ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: isDark ? Colors.grey[800] : Colors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 15,
           vertical: 15,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(
+            color: isDark ? Colors.grey[700]! : Colors.grey.shade300,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

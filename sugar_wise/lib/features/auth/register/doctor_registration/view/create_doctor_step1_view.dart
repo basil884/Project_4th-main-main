@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/auth/register/doctor_registration/view/create_doctor_step2_view.dart';
 import 'package:sugar_wise/features/auth/register/doctor_registration/view_model/create_doctor_step1_view_model.dart';
 
@@ -23,7 +24,7 @@ class _CreateDoctorStep1Body extends StatelessWidget {
     final viewModel = Provider.of<CreateDoctorStep1ViewModel>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF374955), // لون الخلفية الخارجي
+      backgroundColor: AppColors.darkSurface,
       body: SafeArea(
         child: Column(
           children: [
@@ -32,7 +33,7 @@ class _CreateDoctorStep1Body extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: const BoxDecoration(
-                color: Color(0xFF00B4D8), // لون الأيقونة الأزرق
+                color: AppColors.primaryBlue,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -138,7 +139,7 @@ class _CreateDoctorStep1Body extends StatelessWidget {
                               return Theme(
                                 data: Theme.of(context).copyWith(
                                   colorScheme: const ColorScheme.light(
-                                    primary: Color(0xFF00B4D8), // لون التقويم
+                                    primary: AppColors.primaryBlue,
                                   ),
                                 ),
                                 child: child!,
@@ -283,8 +284,8 @@ class _CreateDoctorStep1Body extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 // 🔥 هنا يتم تغيير اللون بناءً على اكتمال البيانات
                                 backgroundColor: viewModel.isFormValid
-                                    ? const Color(0xFF00B4D8)
-                                    : const Color(0xFFE5E7EB), // رمادي فاتح
+                                    ? AppColors.primaryBlue
+                                    : const Color(0xFFE5E7EB),
                                 foregroundColor: viewModel.isFormValid
                                     ? Colors.white
                                     : Colors.grey,
@@ -341,7 +342,7 @@ class _CreateDoctorStep1Body extends StatelessWidget {
         CircleAvatar(
           radius: 12,
           backgroundColor: isActive
-              ? const Color(0xFF00B4D8)
+              ? AppColors.primaryBlue
               : Colors.transparent,
           child: Text(
             number,
@@ -358,7 +359,7 @@ class _CreateDoctorStep1Body extends StatelessWidget {
           style: TextStyle(
             fontSize: 8,
             fontWeight: FontWeight.bold,
-            color: isActive ? const Color(0xFF00B4D8) : Colors.grey,
+            color: isActive ? AppColors.primaryBlue : Colors.grey,
           ),
         ),
       ],
@@ -415,7 +416,7 @@ class _CreateDoctorStep1Body extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF00B4D8)),
+          borderSide: const BorderSide(color: AppColors.primaryBlue),
         ),
       ),
     );
@@ -436,7 +437,7 @@ class _CreateDoctorStep1Body extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.grey.shade50,
           border: Border.all(
-            color: isSelected ? const Color(0xFF00B4D8) : Colors.grey.shade300,
+            color: isSelected ? AppColors.primaryBlue : Colors.grey.shade300,
             width: isSelected ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(10),
@@ -453,7 +454,7 @@ class _CreateDoctorStep1Body extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF00B4D8) : Colors.grey,
+                color: isSelected ? AppColors.primaryBlue : Colors.grey,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),

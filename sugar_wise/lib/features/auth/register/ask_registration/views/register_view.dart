@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/auth/register/doctor_registration/view/create_doctor_step1_view.dart';
 import 'package:sugar_wise/features/auth/register/views/patient_registration_view.dart';
 import '../view_models/register_view_model.dart';
@@ -46,7 +47,7 @@ class _RegisterContent extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00C897), // أخضر اللوجو
+                      color: AppColors.brandGreen,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -106,7 +107,7 @@ class _RegisterContent extends StatelessWidget {
                 title: "Patient Account",
                 subtitle: "Individuals managing diabetes",
                 icon: Icons.person,
-                baseColor: const Color(0xFF00C897), // لون أخضر
+                baseColor: AppColors.brandGreen,
                 isSelected: viewModel.selectedType == AccountType.patient,
                 onTap: () => viewModel.selectAccountType(AccountType.patient),
                 features: const [
@@ -122,7 +123,7 @@ class _RegisterContent extends StatelessWidget {
                 title: "Doctor Account",
                 subtitle: "Healthcare professionals",
                 icon: Icons.medical_services,
-                baseColor: const Color(0xFF2196F3), // لون أزرق
+                baseColor: AppColors.primaryBlue,
                 isSelected: viewModel.selectedType == AccountType.doctor,
                 onTap: () => viewModel.selectAccountType(AccountType.doctor),
                 features: const [
@@ -186,7 +187,7 @@ class _RegisterContent extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           // ✅ ألوان النص تتغير حسب الثيم وحالة التفعيل
                           color: viewModel.canContinue
-                              ? const Color(0xFF1976D2)
+                              ? AppColors.primaryBlue
                               : (isDark
                                     ? Colors.grey[600]
                                     : const Color(0xFF9EAAB6)),
@@ -197,7 +198,7 @@ class _RegisterContent extends StatelessWidget {
                         Icons.arrow_forward,
                         size: 18,
                         color: viewModel.canContinue
-                            ? const Color(0xFF1976D2)
+                            ? AppColors.primaryBlue
                             : (isDark
                                   ? Colors.grey[600]
                                   : const Color(0xFF9EAAB6)),

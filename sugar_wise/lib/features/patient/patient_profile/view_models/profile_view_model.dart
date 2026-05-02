@@ -6,7 +6,7 @@ class ProfileViewModel extends ChangeNotifier {
   // ✅ أزلنا كلمة final لكي نتمكن من تعديل البيانات
   PatientProfileModel patientData = PatientProfileModel(
     name: "Basil Ashraf",
-    imageUrl: "assets/images/patient_avatar.png",
+    imageUrl: "", // تم تفريغ الرابط لمنع الانهيار لأن الصورة غير موجودة
     patientId: "SW-4029",
     height: "175",
     weight: "60",
