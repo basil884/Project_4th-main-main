@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ChangePassDoctor extends StatefulWidget {
   const ChangePassDoctor({super.key});
@@ -29,8 +30,8 @@ class _ChangePassDoctorState extends State<ChangePassDoctor> {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Password updated successfully! ✅"),
+        SnackBar(
+          content: Text("pass_success".tr()),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -49,7 +50,7 @@ class _ChangePassDoctorState extends State<ChangePassDoctor> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Change Password', style: TextStyle(color: textColor)),
+        title: Text('change_password'.tr(), style: TextStyle(color: textColor)),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         iconTheme: IconThemeData(color: textColor),
@@ -67,43 +68,43 @@ class _ChangePassDoctorState extends State<ChangePassDoctor> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Your new password must be different from your previously used passwords",
+                        "change_password_desc".tr(),
                         style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey, height: 1.5),
                       ),
                       const SizedBox(height: 32),
                       _buildPasswordField(
-                        label: "Enter old password",
+                        label: "old_password_label".tr(),
                         controller: _oldPassCtrl,
                         obscureText: _obscureOld,
                         isDark: isDark,
                         onToggleVisibility: () => setState(() => _obscureOld = !_obscureOld),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return "Please enter your old password";
+                          if (value == null || value.isEmpty) return "old_pass_error".tr();
                           return null;
                         },
                       ),
                       _buildPasswordField(
-                        label: "Enter new password",
+                        label: "new_password_label".tr(),
                         controller: _newPassCtrl,
                         obscureText: _obscureNew,
                         isDark: isDark,
                         onToggleVisibility: () => setState(() => _obscureNew = !_obscureNew),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return "Please enter a new password";
-                          if (value.length < 8) return "Password must be at least 8 characters long";
-                          if (value == _oldPassCtrl.text) return "New password must be different from the old one";
+                          if (value == null || value.isEmpty) return "new_pass_error".tr();
+                          if (value.length < 8) return "pass_length_error".tr();
+                          if (value == _oldPassCtrl.text) return "pass_diff_error".tr();
                           return null;
                         },
                       ),
                       _buildPasswordField(
-                        label: "Confirm new password",
+                        label: "confirm_password_label".tr(),
                         controller: _confirmPassCtrl,
                         obscureText: _obscureConfirm,
                         isDark: isDark,
                         onToggleVisibility: () => setState(() => _obscureConfirm = !_obscureConfirm),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return "Please confirm your new password";
-                          if (value != _newPassCtrl.text) return "Passwords do not match";
+                          if (value == null || value.isEmpty) return "confirm_pass_error".tr();
+                          if (value != _newPassCtrl.text) return "pass_match_error".tr();
                           return null;
                         },
                       ),
@@ -119,10 +120,10 @@ class _ChangePassDoctorState extends State<ChangePassDoctor> {
                           onPressed: _updatePassword,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-                              SizedBox(width: 8),
-                              Text("Update Password", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                            children: [
+                              const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+                              const SizedBox(width: 8),
+                              Text("update_password_btn".tr(), style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),

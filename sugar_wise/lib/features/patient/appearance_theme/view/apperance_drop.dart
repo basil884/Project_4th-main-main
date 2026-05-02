@@ -8,8 +8,16 @@ class ThemeDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 🔥 قراءة الثيم الحالي من التطبيق لتحديد القيمة الافتراضية للـ Dropdown
-    final isDark = AdaptiveTheme.of(context).mode.isDark;
-    final String selectedTheme = isDark ? "Dark Mode" : "Light Mode";
+    final mode = AdaptiveTheme.of(context).mode;
+    String selectedTheme = "System Mode";
+    if (mode == AdaptiveThemeMode.light) {
+      selectedTheme = "Light Mode";
+    } else if (mode == AdaptiveThemeMode.dark) {
+      selectedTheme = "Dark Mode";
+    }
+
+    // لمعرفة إذا كان النظام الحالي (سواء عبر النظام أو التطبيق) مظلم أو فاتح لضبط الألوان
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
@@ -19,7 +27,9 @@ class ThemeDropdown extends StatelessWidget {
         color: Theme.of(
           context,
         ).cardColor, // ✅ جعلنا لون الخلفية يتفاعل مع الثيم
-        border: Border.all(color: const Color(0xffE2E8F0)),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : const Color(0xffE2E8F0),
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: DropdownButtonHideUnderline(
@@ -40,6 +50,11 @@ class ThemeDropdown extends StatelessWidget {
           ).scaffoldBackgroundColor, // ✅ لون القائمة المنسدلة
           items: [
             _buildDropdownItem(
+              "System Mode",
+              Icons.brightness_auto_outlined,
+              const Color(0xff10B981),
+            ),
+            _buildDropdownItem(
               "Light Mode",
               Icons.wb_sunny_outlined,
               const Color(0xff3B82F6),
@@ -55,8 +70,10 @@ class ThemeDropdown extends StatelessWidget {
               // 🔥 تغيير الثيم الحقيقي للتطبيق بالكامل!
               if (newValue == "Dark Mode") {
                 AdaptiveTheme.of(context).setDark();
-              } else {
+              } else if (newValue == "Light Mode") {
                 AdaptiveTheme.of(context).setLight();
+              } else {
+                AdaptiveTheme.of(context).setSystem();
               }
             }
           },

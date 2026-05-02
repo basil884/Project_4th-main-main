@@ -1,0 +1,33 @@
+Project Sugar Wise
+Design System & Color Palette Specification (V2 - Brand Integrated)
+🟢 Light Mode Colors
+Element Tailwind Class Hex Code Usage
+Main Background bg-gray-50 #F9FAFB Page backgrounds
+Surface Background bg-white #FFFFFF Cards, Navbar , Inputs
+Primary Text text-gray-900 #111827 Headings, main content
+Primary Blue bg-[#2DA1D7] #2DA1D7 Main brand color
+Brand Green bg-[#8EC641] #8EC641 Secondary brand color
+Success Green text-green-600 #16A34A Health status
+Warning Yellow text-yellow-600 #CA8A04 Alerts
+Danger Red text-red-600 #DC2626 Errors
+🔵 Dark Mode Colors
+Element Tailwind Class Hex Code Usage
+Main Background bg-gray-900 #111827 Main dark bg
+Surface Background bg-gray-800 #1F2937 Cards
+Deep Dark bg-gray-950 #030712 Chat, footer
+Primary Blue text-[#2DA1D7] #2DA1D7 Highlights, buttons
+Success Green text-green-400 #4ADE80 Positive status
+Section Borders border-gray-700 #374151 Dividers🎨 Special Gradients
+Name Preview Tailwind Formula
+Hero Primary from-[#2DA1D7] to-[#8EC641]
+Accent Health from-[#8EC641] to-[#2DA1D7]
+Gamer Accent from-orange-500 to-yellow-500
+📐 Typography and Sizes
+Element Tailwind Classes Usage
+Hero Main Title text-4xl md:text-6xl lg:text-7xl Home page headline
+Section Headings text-4xl md:text-5xl Primary headers
+Feature Card Titles text-3xl Info cards
+Body Text text-lg Main body copy
+Nav Links text-[1.05rem] font-bold Desktop navigation
+Configuration Note: Dark mode triggered via class strategy. Transitions: transition-colors duration-300.
+Glassmorphism: bg-white/80 dark:bg-gray-900/80 backdrop-blur-md. 

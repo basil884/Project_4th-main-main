@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sugar_wise/core/shared_prefs_helper/shared_prefs_helper.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_dashboard/view/doctor_dashboard.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/doctor_home.dart';
 import 'package:sugar_wise/features/patient/patient_home/views/patient_main_layout.dart';
 import 'package:sugar_wise/features/welcome/welcome_first_screen.dart';
 
@@ -36,14 +36,16 @@ class _SplashScreenState extends State<SplashScreen> {
     // 3. التوجيه الذكي بناءً على البيانات التي جلبناها
     if (isLoggedIn && userRole != null) {
       if (userRole == 'doctor') {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const DoctorDashboard()),
+          MaterialPageRoute(builder: (context) => const DoctorHome()),
+          (route) => false,
         );
       } else if (userRole == 'patient') {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const PatientMainLayout()),
+          (route) => false,
         );
       } else {
         _goToLogin();
@@ -54,9 +56,10 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _goToLogin() {
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginView()),
+      (route) => false,
     );
   }
 
@@ -143,7 +146,7 @@ class SplashViewModel {
       if (role == 'patient') {
         nextScreen = const PatientMainLayout();
       } else if (role == 'doctor') {
-        nextScreen = const DoctorDashboard();
+        nextScreen = const DoctorHome();
       } else {
         nextScreen = const WelcomeFirstScreen();
       }
@@ -152,9 +155,10 @@ class SplashViewModel {
     }
 
     // 5. الانتقال وإغلاق الـ Splash
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => nextScreen),
+      (route) => false,
     );
   }
 }

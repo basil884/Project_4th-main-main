@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class DoctorAboutSection extends StatelessWidget {
   final String biography;
@@ -12,7 +13,7 @@ class DoctorAboutSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Biography",
+          "biography_label".tr(),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,

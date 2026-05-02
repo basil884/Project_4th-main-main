@@ -31,23 +31,33 @@ class MonitoringView extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 height: 55,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showAddLogBottomSheet(context, viewModel),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2F66D0),
-                    shape: RoundedRectangleBorder(
+                child: Material(
+                  color: Colors.transparent,
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2DA1D7), Color(0xFF8EC641)],
+                      ),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    elevation: isDark ? 0 : 5, // إخفاء الظل القوي في المظلم
-                    shadowColor: const Color(0xFF2F66D0).withValues(alpha: 0.4),
-                  ),
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text(
-                    "Add Test",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => _showAddLogBottomSheet(context, viewModel),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.add, color: Colors.white),
+                          SizedBox(width: 10),
+                          Text(
+                            "Add Test",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -95,6 +105,16 @@ class MonitoringView extends StatelessWidget {
     bool isDark,
   ) {
     final textColor = isDark ? Colors.white : Colors.black87;
+    final chartReadings = viewModel.chartReadings;
+    final chartSpots = chartReadings
+        .asMap()
+        .entries
+        .map(
+          (entry) =>
+              FlSpot(entry.key.toDouble() * 2, entry.value.value.toDouble()),
+        )
+        .toList();
+    final maxX = chartSpots.isNotEmpty ? chartSpots.last.x : 8.0;
 
     return Container(
       width: double.infinity,
@@ -187,39 +207,46 @@ class MonitoringView extends StatelessWidget {
                       : null,
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: ["Day", "Week", "Mo"].map((filter) {
                     bool isSelected = viewModel.selectedFilter == filter;
-                    return GestureDetector(
-                      onTap: () => viewModel.setFilter(filter),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (isDark ? Colors.grey.shade800 : Colors.white)
-                              : Colors.transparent, // ✅ متجاوب
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: isSelected && !isDark
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 4,
-                                  ),
-                                ]
-                              : [],
-                        ),
-                        child: Text(
-                          filter,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w500,
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onTap: () => viewModel.setFilter(filter),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
                             color: isSelected
-                                ? (isDark ? Colors.white : Colors.black)
-                                : Colors.grey, // ✅ متجاوب
+                                ? const Color(0xFF8EC641)
+                                : Colors.transparent,
+                            border: Border.all(color: const Color(0xFF8EC641)),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: isSelected && !isDark
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                      blurRadius: 4,
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: Text(
+                            filter,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF8EC641),
+                            ),
                           ),
                         ),
                       ),
@@ -231,7 +258,7 @@ class MonitoringView extends StatelessWidget {
           ),
           const SizedBox(height: 30),
           SizedBox(
-            height: 180,
+            height: 150,
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
@@ -268,30 +295,17 @@ class MonitoringView extends StatelessWidget {
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         );
-                        String text = '';
-                        switch (value.toInt()) {
-                          case 0:
-                            text = '10 AM';
-                            break;
-                          case 2:
-                            text = '1 PM';
-                            break;
-                          case 4:
-                            text = '4 PM';
-                            break;
-                          case 6:
-                            text = '8 PM';
-                            break;
-                          case 8:
-                            text = '10 PM';
-                            break;
-                          default:
-                            return const SizedBox.shrink();
+                        if (chartReadings.isEmpty) {
+                          return const SizedBox.shrink();
                         }
+                        final index = (value / 2).round();
+                        if (index < 0 || index >= chartReadings.length) {
+                          return const SizedBox.shrink();
+                        }
+                        final text = chartReadings[index].time;
                         // 🔥 السحر هنا: تغليف النص بـ SideTitleWidget هو ما يمنع الكراش تماماً!
                         return SideTitleWidget(
-                          meta:
-                              meta, // ✅ التعديل الصحيح: استخدام meta بدلاً من axisSide
+                          meta: meta,
                           space: 8,
                           child: Text(text, style: style),
                         );
@@ -301,25 +315,23 @@ class MonitoringView extends StatelessWidget {
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
-                maxX: 8,
+                maxX: maxX,
                 minY: 60,
                 maxY: 160,
                 lineBarsData: [
                   LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 80),
-                      FlSpot(2, 140),
-                      FlSpot(3, 110),
-                      FlSpot(5, 70),
-                      FlSpot(7, 110),
-                      FlSpot(8, 100),
-                    ],
+                    spots: chartSpots.isNotEmpty
+                        ? chartSpots
+                        : const [FlSpot(0, 80)],
                     isCurved: true,
-                    color: const Color(0xFFF97316),
+                    color: const Color(0xFF8EC641),
                     barWidth: 5,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: const Color(0xFF8EC641).withOpacity(0.18),
+                    ),
                   ),
                 ],
                 lineTouchData: LineTouchData(
@@ -485,9 +497,11 @@ class MonitoringView extends StatelessWidget {
                 child: Text(
                   reading.status,
                   style: TextStyle(
-                    color: isDark
-                        ? _getBrighterColor(reading.statusColor)
-                        : reading.statusColor, // تفتيح النص ليظهر في المظلم
+                    color: reading.status == 'High'
+                        ? const Color(0xFFDC2626)
+                        : (isDark
+                              ? _getBrighterColor(reading.statusColor)
+                              : reading.statusColor),
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -585,185 +599,208 @@ class MonitoringView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: _buildLogInputField(
-                                  context,
-                                  "GLUCOSE LEVEL",
-                                  "e.g., 120",
-                                  isDark: isDark,
-                                  prefixIcon: Icons.water_drop_outlined,
-                                  controller: glucoseCtrl,
-                                  hasError: isGlucoseEmptyError,
-                                  errorText: "Required field",
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3D07C),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: _buildLogInputField(
+                                        context,
+                                        "GLUCOSE LEVEL",
+                                        "e.g., 120",
+                                        isDark: false,
+                                        prefixIcon: Icons.water_drop_outlined,
+                                        controller: glucoseCtrl,
+                                        hasError: isGlucoseEmptyError,
+                                        errorText: "Required field",
+                                      ),
+                                    ),
+                                    const SizedBox(width: 15),
+                                    Expanded(
+                                      flex: 2,
+                                      child: _buildLogDropdownField(
+                                        context,
+                                        "UNIT",
+                                        selectedUnit,
+                                        viewModel.glucoseUnits,
+                                        (val) => setModalState(
+                                          () => selectedUnit = val!,
+                                        ),
+                                        isDark: false,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(width: 15),
-                              Expanded(
-                                flex: 2,
-                                child: _buildLogDropdownField(
-                                  context,
-                                  "UNIT",
-                                  selectedUnit,
-                                  viewModel.glucoseUnits,
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildLogInputField(
+                                        context,
+                                        "DATE",
+                                        DateFormat(
+                                          "dd/MM/yyyy",
+                                        ).format(selectedDate),
+                                        isDark: false,
+                                        suffixIcon: Icons.calendar_month,
+                                        readOnly: true,
+                                        onTap: () async {
+                                          final DateTime? picked =
+                                              await showDatePicker(
+                                                context: context,
+                                                initialDate: selectedDate,
+                                                firstDate: DateTime(2000),
+                                                lastDate: DateTime(2100),
+                                              );
+                                          if (picked != null) {
+                                            setModalState(
+                                              () => selectedDate = picked,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 15),
+                                    Expanded(
+                                      child: _buildLogInputField(
+                                        context,
+                                        "TIME",
+                                        selectedTime.format(context),
+                                        isDark: false,
+                                        suffixIcon: Icons.access_time,
+                                        readOnly: true,
+                                        onTap: () async {
+                                          final TimeOfDay? picked =
+                                              await showTimePicker(
+                                                context: context,
+                                                initialTime: selectedTime,
+                                              );
+                                          if (picked != null) {
+                                            setModalState(
+                                              () => selectedTime = picked,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 30),
+                                _buildSectionHeader(
+                                  Icons.restaurant,
+                                  "My Foods",
+                                  isDark: false,
+                                  iconColor: Colors.white70,
+                                ),
+                                _buildMealSelectors(
+                                  selectedMeal,
                                   (val) =>
-                                      setModalState(() => selectedUnit = val!),
-                                  isDark: isDark,
+                                      setModalState(() => selectedMeal = val),
+                                  false,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 15),
+                                _buildLogDropdownField(
+                                  context,
+                                  "",
+                                  selectedDefaultFood,
+                                  viewModel.defaultFoods,
+                                  (val) => setModalState(
+                                    () => selectedDefaultFood = val!,
+                                  ),
+                                  isDark: false,
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 20),
-
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildLogInputField(
-                                  context,
-                                  "DATE",
-                                  DateFormat("dd/MM/yyyy").format(selectedDate),
-                                  isDark: isDark,
-                                  suffixIcon: Icons.calendar_month,
-                                  readOnly: true,
-                                  onTap: () async {
-                                    final DateTime? picked =
-                                        await showDatePicker(
-                                          context: context,
-                                          initialDate: selectedDate,
-                                          firstDate: DateTime(2000),
-                                          lastDate: DateTime(2100),
-                                        );
-                                    if (picked != null) {
-                                      setModalState(
-                                        () => selectedDate = picked,
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 15),
-                              Expanded(
-                                child: _buildLogInputField(
-                                  context,
-                                  "TIME",
-                                  selectedTime.format(context),
-                                  isDark: isDark,
-                                  suffixIcon: Icons.access_time,
-                                  readOnly: true,
-                                  onTap: () async {
-                                    final TimeOfDay? picked =
-                                        await showTimePicker(
-                                          context: context,
-                                          initialTime: selectedTime,
-                                        );
-                                    if (picked != null) {
-                                      setModalState(
-                                        () => selectedTime = picked,
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-
-                          _buildSectionHeader(
-                            Icons.restaurant,
-                            "My Foods",
-                            isDark: isDark,
-                          ),
-                          _buildMealSelectors(
-                            selectedMeal,
-                            (val) => setModalState(() => selectedMeal = val),
-                            isDark,
-                          ),
-                          const SizedBox(height: 15),
-
-                          _buildLogDropdownField(
-                            context,
-                            "",
-                            selectedDefaultFood,
-                            viewModel.defaultFoods,
-                            (val) =>
-                                setModalState(() => selectedDefaultFood = val!),
-                            isDark: isDark,
-                          ),
-                          const SizedBox(height: 15),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildLogTextField(
-                                  customFoodCtrl,
-                                  "Custom...",
-                                  isDark,
-                                  context,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (customFoodCtrl.text.isNotEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          "${customFoodCtrl.text} added to meal!",
-                                        ),
-                                        backgroundColor: Colors.green,
-                                        duration: const Duration(seconds: 1),
-                                      ),
-                                    );
-                                    setModalState(() => customFoodCtrl.clear());
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xffF97316),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                child: const Text(
-                                  "Add",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-
-                          _buildSectionHeader(
-                            Icons.medication_outlined,
-                            "Insulin & Medication",
-                            isDark: isDark,
-                            iconColor: const Color(0xFF9333EA),
-                          ),
                           Container(
-                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              border: Border.all(
-                                color: const Color(
-                                  0xFF9333EA,
-                                ).withValues(alpha: isDark ? 0.4 : 0.2),
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              color: const Color(
-                                0xFF9333EA,
-                              ).withValues(alpha: isDark ? 0.1 : 0.05),
+                              color: const Color(0xFFF0EDF9),
+                              borderRadius: BorderRadius.circular(24),
                             ),
-                            child: _buildLogDropdownField(
-                              context,
-                              "",
-                              selectedInsulin,
-                              viewModel.insulinTypes,
-                              (val) =>
-                                  setModalState(() => selectedInsulin = val!),
-                              isDark: isDark,
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildSectionHeader(
+                                  Icons.medication_outlined,
+                                  "Insulin & Medication",
+                                  isDark: isDark,
+                                  iconColor: const Color(0xFF9333EA),
+                                ),
+                                _buildLogDropdownField(
+                                  context,
+                                  "",
+                                  selectedInsulin,
+                                  viewModel.insulinTypes,
+                                  (val) => setModalState(
+                                    () => selectedInsulin = val!,
+                                  ),
+                                  isDark: isDark,
+                                ),
+                                const SizedBox(height: 15),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildLogTextField(
+                                        customFoodCtrl,
+                                        "Custom...",
+                                        isDark,
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        if (customFoodCtrl.text.isNotEmpty) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                "${customFoodCtrl.text} added to meal!",
+                                              ),
+                                              backgroundColor: Colors.green,
+                                              duration: const Duration(
+                                                seconds: 1,
+                                              ),
+                                            ),
+                                          );
+                                          setModalState(
+                                            () => customFoodCtrl.clear(),
+                                          );
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xffF97316,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "Add",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 40),
@@ -777,89 +814,102 @@ class MonitoringView extends StatelessWidget {
                     child: SizedBox(
                       width: double.infinity,
                       height: 55,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (glucoseCtrl.text.trim().isEmpty) {
-                            setModalState(() {
-                              isGlucoseEmptyError = true;
-                            });
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Row(
-                                  children: const [
-                                    Icon(
-                                      Icons.warning_amber_rounded,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        "Please enter your glucose level!",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                backgroundColor: Colors.redAccent,
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                margin: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).size.height * 0.75,
-                                  left: 20,
-                                  right: 20,
-                                ),
-                                duration: const Duration(seconds: 3),
-                              ),
-                            );
-                            return;
-                          }
-
-                          setModalState(() {
-                            isGlucoseEmptyError = false;
-                          });
-
-                          int glucoseValue =
-                              int.tryParse(glucoseCtrl.text.trim()) ?? 0;
-                          viewModel.saveLog(
-                            glucoseValue: glucoseValue,
-                            unit: selectedUnit,
-                            date: DateFormat("dd/MM/yyyy").format(selectedDate),
-                            time: selectedTime.format(context),
-                            meal: selectedMeal,
-                            insulin: selectedInsulin == "Select insulin..."
-                                ? null
-                                : selectedInsulin,
-                          );
-
-                          Navigator.pop(context);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("✅ Reading saved successfully!"),
-                              backgroundColor: Color(0xFF10B981),
-                              behavior: SnackBarBehavior.floating,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2DA1D7), Color(0xFF8EC641)],
                             ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2F66D0),
-                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
-                        ),
-                        child: const Text(
-                          "Save Log",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(14),
+                            onTap: () {
+                              if (glucoseCtrl.text.trim().isEmpty) {
+                                setModalState(() {
+                                  isGlucoseEmptyError = true;
+                                });
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Row(
+                                      children: const [
+                                        Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Colors.white,
+                                        ),
+                                        SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            "Please enter your glucose level!",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    margin: EdgeInsets.only(
+                                      bottom:
+                                          MediaQuery.of(context).size.height *
+                                          0.75,
+                                      left: 20,
+                                      right: 20,
+                                    ),
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              setModalState(() {
+                                isGlucoseEmptyError = false;
+                              });
+
+                              int glucoseValue =
+                                  int.tryParse(glucoseCtrl.text.trim()) ?? 0;
+                              viewModel.saveLog(
+                                glucoseValue: glucoseValue,
+                                unit: selectedUnit,
+                                date: DateFormat(
+                                  "dd/MM/yyyy",
+                                ).format(selectedDate),
+                                time: selectedTime.format(context),
+                                meal: selectedMeal,
+                                insulin: selectedInsulin == "Select insulin..."
+                                    ? null
+                                    : selectedInsulin,
+                              );
+
+                              Navigator.pop(context);
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "✅ Reading saved successfully!",
+                                  ),
+                                  backgroundColor: Color(0xFF10B981),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                            child: const Center(
+                              child: Text(
+                                "Save Log",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -931,7 +981,7 @@ class MonitoringView extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: hasError
                 ? Colors.red
-                : (isDark ? Colors.grey.shade400 : const Color(0xFF667085)),
+                : (isDark ? Colors.grey.shade400 : const Color(0xFFB18A3A)),
           ),
         ),
         const SizedBox(height: 8),
@@ -1031,6 +1081,17 @@ class MonitoringView extends StatelessWidget {
     Function(String?) onChanged, {
     required bool isDark,
   }) {
+    final TextStyle dropdownSelectedStyle = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: isDark ? Colors.white : Colors.black87,
+    );
+    final TextStyle dropdownPlaceholderStyle = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: isDark ? Colors.grey.shade500 : Colors.grey,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1066,17 +1127,35 @@ class MonitoringView extends StatelessWidget {
               value: value,
               isExpanded: true,
               dropdownColor: Theme.of(context).cardColor, // ✅ لون القائمة
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
+              style: dropdownSelectedStyle,
+              selectedItemBuilder: (BuildContext context) {
+                return items
+                    .map(
+                      (e) => Text(
+                        e,
+                        style: e.toLowerCase().contains('select')
+                            ? dropdownPlaceholderStyle
+                            : dropdownSelectedStyle,
+                      ),
+                    )
+                    .toList();
+              },
               icon: Icon(
                 Icons.keyboard_arrow_down,
                 color: isDark ? Colors.grey.shade500 : Colors.grey,
               ),
               items: items
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .map(
+                    (e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(
+                        e,
+                        style: e.toLowerCase().contains('select')
+                            ? dropdownPlaceholderStyle
+                            : dropdownSelectedStyle,
+                      ),
+                    ),
+                  )
                   .toList(),
               onChanged: onChanged,
             ),

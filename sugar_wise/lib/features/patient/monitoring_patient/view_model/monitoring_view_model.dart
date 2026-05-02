@@ -60,7 +60,7 @@ class MonitoringViewModel extends ChangeNotifier {
       unit: "mg/dL",
       meal: "Lunch",
       status: "High",
-      statusColor: const Color(0xFFF59E0B),
+      statusColor: const Color(0xFFDC2626),
     ),
     SugarReading(
       date: "03/05/2026",
@@ -74,6 +74,118 @@ class MonitoringViewModel extends ChangeNotifier {
   ];
 
   List<SugarReading> get recentReadings => _recentReadings;
+
+  List<SugarReading> get chartReadings {
+    switch (_selectedFilter) {
+      case 'Week':
+        return [
+          SugarReading(
+            date: '27/04/2026',
+            time: 'Mon',
+            value: 90,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'Normal',
+            statusColor: const Color(0xFF10B981),
+          ),
+          SugarReading(
+            date: '28/04/2026',
+            time: 'Tue',
+            value: 115,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'High',
+            statusColor: const Color(0xFFDC2626),
+          ),
+          SugarReading(
+            date: '29/04/2026',
+            time: 'Wed',
+            value: 105,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'Normal',
+            statusColor: const Color(0xFF10B981),
+          ),
+          SugarReading(
+            date: '30/04/2026',
+            time: 'Thu',
+            value: 98,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'Normal',
+            statusColor: const Color(0xFF10B981),
+          ),
+          SugarReading(
+            date: '01/05/2026',
+            time: 'Fri',
+            value: 123,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'High',
+            statusColor: const Color(0xFFDC2626),
+          ),
+          SugarReading(
+            date: '02/05/2026',
+            time: 'Sat',
+            value: 108,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'Normal',
+            statusColor: const Color(0xFF10B981),
+          ),
+        ];
+      case 'Month':
+        return [
+          SugarReading(
+            date: 'Jan',
+            time: 'Wk1',
+            value: 100,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'Normal',
+            statusColor: const Color(0xFF10B981),
+          ),
+          SugarReading(
+            date: 'Feb',
+            time: 'Wk2',
+            value: 112,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'High',
+            statusColor: const Color(0xFFDC2626),
+          ),
+          SugarReading(
+            date: 'Mar',
+            time: 'Wk3',
+            value: 105,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'Normal',
+            statusColor: const Color(0xFF10B981),
+          ),
+          SugarReading(
+            date: 'Apr',
+            time: 'Wk4',
+            value: 97,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'Normal',
+            statusColor: const Color(0xFF10B981),
+          ),
+          SugarReading(
+            date: 'May',
+            time: 'Wk5',
+            value: 118,
+            unit: 'mg/dL',
+            meal: 'Lunch',
+            status: 'High',
+            statusColor: const Color(0xFFDC2626),
+          ),
+        ];
+      default:
+        return _recentReadings.take(6).toList().reversed.toList();
+    }
+  }
 
   void setFilter(String filter) {
     _selectedFilter = filter;
@@ -92,7 +204,7 @@ class MonitoringViewModel extends ChangeNotifier {
         ? "High"
         : (glucoseValue < 70 ? "Low" : "Normal");
     Color color = glucoseValue > 110
-        ? const Color(0xFFF59E0B)
+        ? const Color(0xFFDC2626)
         : (glucoseValue < 70 ? Colors.red : const Color(0xFF10B981));
 
     _recentReadings.insert(

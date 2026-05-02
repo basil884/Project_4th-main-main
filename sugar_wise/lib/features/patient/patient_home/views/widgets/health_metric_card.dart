@@ -106,17 +106,30 @@ class HealthMetricCard extends StatelessWidget {
   }
 
   Widget _buildCardUI(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: EdgeInsets.all(isZoomed ? 24 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: isDark
+              ? [Colors.grey[900]!, iconBgColor.withValues(alpha: 0.1)]
+              : [Colors.white, iconBgColor.withValues(alpha: 0.4)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : iconBgColor.withValues(alpha: 0.6),
+          width: 1,
+        ),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isZoomed ? 0.15 : 0.03),
-            blurRadius: isZoomed ? 25 : 10,
-            offset: Offset(0, isZoomed ? 12 : 4),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: iconBgColor.withValues(alpha: isZoomed ? 0.3 : 0.15),
+              blurRadius: isZoomed ? 25 : 10,
+              offset: Offset(0, isZoomed ? 12 : 4),
+            ),
         ],
       ),
       child: Column(
@@ -146,7 +159,7 @@ class HealthMetricCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: isZoomed ? 40 : 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
                   if (unit.isNotEmpty) ...[
@@ -198,7 +211,7 @@ class HealthMetricCard extends StatelessWidget {
           // ==========================================
           if (isZoomed) ...[
             const SizedBox(height: 25),
-            const Divider(color: Colors.black12),
+            Divider(color: isDark ? Colors.grey[800] : Colors.black12),
             const SizedBox(height: 15),
             Row(
               children: [
@@ -208,12 +221,12 @@ class HealthMetricCard extends StatelessWidget {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   "Medical Advice",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
+                    color: isDark ? Colors.white : const Color(0xFF1F2937),
                   ),
                 ),
               ],
@@ -222,18 +235,16 @@ class HealthMetricCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: const Color(
-                  0xFFF3F4F6,
-                ), // خلفية رمادية فاتحة مريحة للعين
+                color: isDark ? Colors.grey[850] : const Color(0xFFF3F4F6), // خلفية رمادية فاتحة مريحة للعين
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: isDark ? Colors.grey[700]! : const Color(0xFFE5E7EB)),
               ),
               child: Text(
                 _getMedicalAdvice(), // استدعاء الدالة الذكية
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   height: 1.5, // مسافة بين السطور لسهولة القراءة
-                  color: Color(0xFF4B5563),
+                  color: isDark ? Colors.grey[300] : const Color(0xFF4B5563),
                 ),
               ),
             ),

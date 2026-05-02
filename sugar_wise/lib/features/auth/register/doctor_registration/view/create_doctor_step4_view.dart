@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:sugar_wise/features/auth/register/doctor_registration/view_model/create_doctor_step4_view_model.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
@@ -28,7 +29,7 @@ class _CreateDoctorStep4Body extends StatelessWidget {
     final viewModel = Provider.of<CreateDoctorStep4ViewModel>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF374955),
+      backgroundColor: AppColors.darkSurface,
       body: SafeArea(
         child: Column(
           children: [
@@ -37,11 +38,11 @@ class _CreateDoctorStep4Body extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: const Color(0xFF00B4D8),
+                color: AppColors.primaryBlue,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF00B4D8).withValues(alpha: 0.3),
+                    color: AppColors.primaryBlue.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -224,7 +225,7 @@ class _CreateDoctorStep4Body extends StatelessWidget {
                                   : null,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: viewModel.isFormValid
-                                    ? const Color(0xFF00B4D8)
+                                    ? AppColors.primaryBlue
                                     : const Color(0xFFE5E7EB),
                                 foregroundColor: viewModel.isFormValid
                                     ? Colors.white
@@ -321,7 +322,7 @@ class _CreateDoctorStep4Body extends StatelessWidget {
     required bool isActive,
   }) {
     Color circleColor = (isCompleted || isActive)
-        ? const Color(0xFF00B4D8)
+        ? AppColors.primaryBlue
         : Colors.transparent;
     return Column(
       children: [
@@ -346,7 +347,7 @@ class _CreateDoctorStep4Body extends StatelessWidget {
             fontSize: 8,
             fontWeight: FontWeight.bold,
             color: (isActive || isCompleted)
-                ? const Color(0xFF00B4D8)
+                ? AppColors.primaryBlue
                 : Colors.grey,
           ),
         ),
@@ -358,7 +359,7 @@ class _CreateDoctorStep4Body extends StatelessWidget {
     return Container(
       width: 15,
       height: 2,
-      color: isActive ? const Color(0xFF00B4D8) : Colors.grey.shade300,
+      color: isActive ? AppColors.primaryBlue : Colors.grey.shade300,
       margin: const EdgeInsets.only(bottom: 15),
     );
   }
@@ -402,7 +403,7 @@ class _CreateDoctorStep4Body extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF00B4D8)),
+          borderSide: const BorderSide(color: AppColors.primaryBlue),
         ),
       ),
     );
@@ -435,7 +436,7 @@ class _CreateDoctorStep4Body extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF00B4D8)),
+          borderSide: const BorderSide(color: AppColors.primaryBlue),
         ),
       ),
     );
@@ -478,7 +479,7 @@ class _CreateDoctorStep4Body extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF00B4D8)),
+          borderSide: const BorderSide(color: AppColors.primaryBlue),
         ),
       ),
     );

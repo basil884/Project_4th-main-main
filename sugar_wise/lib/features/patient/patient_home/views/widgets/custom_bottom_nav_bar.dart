@@ -12,47 +12,64 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey[900] : Colors.white,
         borderRadius: BorderRadius.circular(40),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : Colors.transparent,
+          width: 1,
+        ),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: const Color(0xFF2F80ED).withValues(alpha: 0.15),
+              blurRadius: 25,
+              offset: const Offset(0, 10),
+            ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildNavItem(Icons.home_filled, 0),
-          _buildNavItem(Icons.calendar_month_outlined, 1),
-          _buildNavItem(Icons.health_and_safety_outlined, 2),
-          _buildNavItem(Icons.chat_bubble_outline, 3),
-          _buildNavItem(Icons.person_outline, 4),
-          // _buildNavItem(Icons.person_outline, 4),
+          _buildNavItem(Icons.home_filled, 0, isDark),
+          _buildNavItem(Icons.calendar_month_outlined, 1, isDark),
+          _buildNavItem(Icons.health_and_safety_outlined, 2, isDark),
+          _buildNavItem(Icons.chat_bubble_outline, 3, isDark),
+          _buildNavItem(Icons.person_outline, 4, isDark),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index) {
+  Widget _buildNavItem(IconData icon, int index, bool isDark) {
     bool isSelected = currentIndex == index;
     return GestureDetector(
       onTap: () => onTap(index),
-      child: CircleAvatar(
-        radius: 25,
-        backgroundColor: isSelected
-            ? const Color(0xFF257BF4)
-            : Colors.transparent,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [Color(0xFF2F80ED), Color(0xFF56CCF2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.transparent,
+        ),
         child: Icon(
           icon,
-          color: isSelected ? const Color(0xFFffffff) : Colors.grey,
-          size: 28,
+          color: isSelected 
+              ? Colors.white 
+              : (isDark ? Colors.grey[500] : Colors.grey[400]),
+          size: 26,
         ),
       ),
     );

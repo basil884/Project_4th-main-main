@@ -69,7 +69,7 @@ class MyApp extends StatelessWidget {
         primaryColor: const Color(0xFF10B981),
         cardColor: const Color(0xFF1E1E1E),
       ),
-      initial: savedThemeMode ?? AdaptiveThemeMode.system,
+      initial: savedThemeMode ?? AdaptiveThemeMode.light,
       builder: (theme, darkTheme) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Sugar Wise',

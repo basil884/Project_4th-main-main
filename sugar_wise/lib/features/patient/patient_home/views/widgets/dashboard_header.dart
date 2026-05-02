@@ -82,6 +82,8 @@ class DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -91,7 +93,11 @@ class DashboardHeader extends StatelessWidget {
               onTap: () {
                 Scaffold.of(context).openDrawer();
               },
-              child: const Icon(Icons.menu, size: 30, color: Colors.black87),
+              child: Icon(
+                Icons.menu,
+                size: 30,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
             ),
             const SizedBox(width: 15),
             Column(
@@ -99,10 +105,10 @@ class DashboardHeader extends StatelessWidget {
               children: [
                 Text(
                   "Goodmorning, $patientName 👋",
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),
                 const Text(
@@ -125,9 +131,17 @@ class DashboardHeader extends StatelessWidget {
                   ),
                 );
               },
-              child: CircleAvatar(
-                backgroundColor: const Color(0xFF257BF4), // لون الـ Cyan/Teal
-                radius: 22,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF2F80ED), Color(0xFF56CCF2)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
                 child: const Icon(
                   Icons.notifications_none,
                   color: Colors.white,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import '../../view_models/doctor_chats_view_model.dart';
 
 class ChatSearchBar extends StatelessWidget {
@@ -17,13 +18,11 @@ class ChatSearchBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(30),
-
-        // ✅ السحر هنا: إضافة الحواف البيضاء
         border: Border.all(
-          color: Colors.white, // لون الحافة
-          width: 2.0, // سمك الحافة (يمكنك زيادته أو تقليله حسب رغبتك)
+          color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+          width: 1.0,
         ),
 
         boxShadow: [
@@ -40,11 +39,13 @@ class ChatSearchBar extends StatelessWidget {
           Expanded(
             child: TextField(
               onChanged: viewModel.searchChats,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              style: TextStyle(
+                color: isDark ? AppColors.darkTextPrimary : AppColors.textMain,
+              ),
               decoration: InputDecoration(
                 hintText: "Search",
                 hintStyle: TextStyle(
-                  color: isDark ? Colors.grey[500] : Colors.grey,
+                  color: isDark ? AppColors.darkTextSecondary : Colors.grey,
                 ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
@@ -58,7 +59,7 @@ class ChatSearchBar extends StatelessWidget {
           Container(
             margin: const EdgeInsets.all(4),
             decoration: const BoxDecoration(
-              color: Color(0xFF3A4B3C),
+              color: AppColors.primaryBlue,
               shape: BoxShape.circle,
             ),
             child: IconButton(

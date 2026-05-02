@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
 import 'package:sugar_wise/features/doctor/settings_doctor/view/change_pass_doctor.dart';
 
@@ -17,12 +18,12 @@ class SecuritySettingDoctor extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           title: Row(
-            children: const [
-              Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-              SizedBox(width: 10),
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+              const SizedBox(width: 10),
               Text(
-                "Delete Account",
-                style: TextStyle(
+                "delete_confirm_title".tr(),
+                style: const TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.bold,
                 ),
@@ -30,7 +31,7 @@ class SecuritySettingDoctor extends StatelessWidget {
             ],
           ),
           content: Text(
-            "Are you sure you want to permanently delete your account? All your personal data and history will be lost. This action cannot be undone.",
+            "delete_confirm_desc".tr(),
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.grey.shade300 : Colors.black87,
@@ -41,7 +42,7 @@ class SecuritySettingDoctor extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                "Cancel",
+                "cancel".tr(),
                 style: TextStyle(
                   color: isDark ? Colors.grey.shade400 : Colors.grey,
                   fontWeight: FontWeight.bold,
@@ -62,9 +63,9 @@ class SecuritySettingDoctor extends StatelessWidget {
                   (route) => false,
                 );
               },
-              child: const Text(
-                "Delete",
-                style: TextStyle(
+              child: Text(
+                "delete".tr(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -85,14 +86,14 @@ class SecuritySettingDoctor extends StatelessWidget {
       {
         "icon": Icons.lock_outline,
         "color": Colors.blue,
-        "title": "Change Password",
-        "subtitle": "Update your account password",
+        "title": "change_password".tr(),
+        "subtitle": "change_password_subtitle".tr(),
       },
       {
         "icon": Icons.delete_outline,
         "color": Colors.red,
-        "title": "Delete Account",
-        "subtitle": "Permanently remove your data",
+        "title": "delete_account".tr(),
+        "subtitle": "delete_account_subtitle".tr(),
       },
     ];
 
@@ -100,7 +101,7 @@ class SecuritySettingDoctor extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          "Security Settings",
+          "security_settings".tr(),
           style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
         ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,

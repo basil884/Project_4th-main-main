@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/add_clinic/view/add_clinic_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/ViewModel/home_view_model.dart';
 import 'package:sugar_wise/features/doctor/profile_doctor/doctor_profile/view_model/doctor_profile_view_model.dart';
 import 'package:sugar_wise/features/doctor/profile_doctor/edit_doctor_profile/view/edit_doctor_profile_view.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,10 +13,7 @@ class DoctorProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => DoctorProfileViewModel(),
-      child: const _DoctorProfileBody(),
-    );
+    return const _DoctorProfileBody();
   }
 }
 
@@ -23,24 +23,38 @@ class _DoctorProfileBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DoctorProfileViewModel>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textMain;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9), // لون الخلفية الرمادي الفاتح
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: GestureDetector(
+          onTap: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Provider.of<HomeViewModel>(context, listen: false).changeTab(2);
+            }
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
+        centerTitle: true,
+        title: Text("profile_title".tr(), style: const TextStyle(color: Colors.white)),
+      ),
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.scaffoldBackground,
       body: Stack(
         children: [
           // 1. الخلفية المتدرجة (Gradient Background)
           Container(
             height: 250,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF3B82F6),
-                  Color(0xFF10B981),
-                ], // من أزرق إلى أخضر
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+            decoration: const BoxDecoration(gradient: AppColors.heroPrimary),
           ),
 
           // 2. المحتوى القابل للتمرير
@@ -55,50 +69,61 @@ class _DoctorProfileBody extends StatelessWidget {
               child: Column(
                 children: [
                   // بطاقة الملف الشخصي الرئيسية
-                  _buildProfileCard(context, viewModel),
+                  _buildProfileCard(context, viewModel, isDark),
                   const SizedBox(height: 20),
 
                   // بطاقات الإحصائيات (Patients, Experience, Rating)
                   _buildStatCard(
                     Icons.people_outline,
                     viewModel.patientsCount,
-                    "Patients",
-                    const Color(0xFFE0E7FF),
-                    const Color(0xFF4F46E5),
+                    "patients_label".tr(),
+                    AppColors.primaryBlue.withValues(alpha: 0.12),
+                    AppColors.primaryBlue,
+                    isDark,
                   ),
                   const SizedBox(height: 15),
                   _buildStatCard(
                     Icons.work_outline,
                     viewModel.experienceYears,
-                    "Experience",
-                    const Color(0xFFD1FAE5),
-                    const Color(0xFF059669),
+                    "experience_label".tr(),
+                    AppColors.brandGreen.withValues(alpha: 0.12),
+                    AppColors.brandGreen,
+                    isDark,
                   ),
                   const SizedBox(height: 15),
                   _buildStatCard(
                     Icons.star_border,
                     "${viewModel.rating}",
-                    "Rating",
-                    const Color(0xFFFFEDD5),
-                    const Color(0xFFEA580C),
+                    "rating_label".tr(),
+                    AppColors.warning.withValues(alpha: 0.12),
+                    AppColors.warning,
+                    isDark,
                   ),
                   const SizedBox(height: 20),
 
                   // قسم الـ Tabs ومحتواها
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? AppColors.darkSurface : Colors.white,
                       borderRadius: BorderRadius.circular(20),
+                      border: isDark
+                          ? Border.all(color: AppColors.darkBorder)
+                          : null,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildTabBar(viewModel),
-                        const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                        _buildTabBar(viewModel, isDark),
+                        Divider(
+                          height: 1,
+                          color: isDark
+                              ? AppColors.darkBorder
+                              : const Color(0xFFEEEEEE),
+                        ),
                         // المحتوى المتغير بناءً على التاب النشط
                         Padding(
                           padding: const EdgeInsets.all(20),
-                          child: _buildTabContent(context, viewModel),
+                          child: _buildTabContent(context, viewModel, isDark),
                         ),
                       ],
                     ),
@@ -118,19 +143,22 @@ class _DoctorProfileBody extends StatelessWidget {
   Widget _buildProfileCard(
     BuildContext context,
     DoctorProfileViewModel viewModel,
+    bool isDark,
   ) {
     return Container(
       // ... باقي الكود ...
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
         ],
       ),
       child: Column(
@@ -149,9 +177,12 @@ class _DoctorProfileBody extends StatelessWidget {
                 width: 18,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981),
+                  color: AppColors.brandGreen,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkSurface : Colors.white,
+                    width: 3,
+                  ),
                 ),
               ),
             ],
@@ -159,17 +190,19 @@ class _DoctorProfileBody extends StatelessWidget {
           const SizedBox(height: 15),
           Text(
             viewModel.doctorName,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
+              color: isDark
+                  ? AppColors.darkTextPrimary
+                  : const Color(0xFF1F2937),
             ),
           ),
           Text(
             viewModel.specialty,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
-              color: Color(0xFF3B82F6),
+              color: AppColors.primaryBlue,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -177,15 +210,22 @@ class _DoctorProfileBody extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.star, color: Color(0xFFFBBF24), size: 18),
+              const Icon(Icons.star, color: AppColors.warningLight, size: 18),
               const SizedBox(width: 5),
               Text(
                 "${viewModel.rating}",
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.textMain,
+                ),
               ),
               Text(
-                " (${viewModel.reviewsCount} reviews)",
-                style: const TextStyle(color: Colors.grey),
+                "reviews_count_text".tr(args: [viewModel.reviewsCount.toString()]),
+                style: TextStyle(
+                  color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                ),
               ),
             ],
           ),
@@ -221,10 +261,10 @@ class _DoctorProfileBody extends StatelessWidget {
                 }
               },
               icon: const Icon(Icons.person_outline, size: 20),
-              label: const Text("Edit Profile"),
+              label: Text("edit_profile".tr()),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEFF6FF), // أزرق فاتح جداً
-                foregroundColor: const Color(0xFF3B82F6), // النص أزرق
+                backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                foregroundColor: AppColors.primaryBlue,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -244,12 +284,14 @@ class _DoctorProfileBody extends StatelessWidget {
     String subtitle,
     Color bgColor,
     Color iconColor,
+    bool isDark,
   ) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(15),
+        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
       ),
       child: Row(
         children: [
@@ -267,14 +309,20 @@ class _DoctorProfileBody extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.textMain,
                 ),
               ),
               Text(
                 subtitle,
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                style: TextStyle(
+                  color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -283,12 +331,12 @@ class _DoctorProfileBody extends StatelessWidget {
     );
   }
 
-  Widget _buildTabBar(DoctorProfileViewModel viewModel) {
+  Widget _buildTabBar(DoctorProfileViewModel viewModel, bool isDark) {
     return Row(
       children: [
-        _buildTabItem("Overview", 0, viewModel),
-        _buildTabItem("Reviews", 1, viewModel),
-        _buildTabItem("Clinics", 2, viewModel),
+        _buildTabItem("overview_tab".tr(), 0, viewModel, isDark),
+        _buildTabItem("reviews_tab".tr(), 1, viewModel, isDark),
+        _buildTabItem("clinics_tab".tr(), 2, viewModel, isDark),
       ],
     );
   }
@@ -297,6 +345,7 @@ class _DoctorProfileBody extends StatelessWidget {
     String title,
     int index,
     DoctorProfileViewModel viewModel,
+    bool isDark,
   ) {
     bool isSelected = viewModel.selectedTabIndex == index;
     return Expanded(
@@ -307,9 +356,7 @@ class _DoctorProfileBody extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isSelected
-                    ? const Color(0xFF3B82F6)
-                    : Colors.transparent,
+                color: isSelected ? AppColors.primaryBlue : Colors.transparent,
                 width: 2,
               ),
             ),
@@ -318,7 +365,9 @@ class _DoctorProfileBody extends StatelessWidget {
             child: Text(
               title,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF3B82F6) : Colors.grey,
+                color: isSelected
+                    ? AppColors.primaryBlue
+                    : (isDark ? AppColors.darkTextSecondary : Colors.grey),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -332,32 +381,44 @@ class _DoctorProfileBody extends StatelessWidget {
   Widget _buildTabContent(
     BuildContext context,
     DoctorProfileViewModel viewModel,
+    bool isDark,
   ) {
     switch (viewModel.selectedTabIndex) {
       case 0:
-        return _buildOverviewContent(viewModel);
+        return _buildOverviewContent(viewModel, isDark);
       case 1:
-        return _buildReviewsContent(viewModel);
+        return _buildReviewsContent(viewModel, isDark);
       case 2:
-        return _buildClinicsContent(context, viewModel); // 🔥 تم تفعيل العيادات
+        return _buildClinicsContent(
+          context,
+          viewModel,
+          isDark,
+        ); // 🔥 تم تفعيل العيادات
       default:
         return const SizedBox();
     }
   }
 
   // محتوى تبويب Overview المطابق للصورة
-  Widget _buildOverviewContent(DoctorProfileViewModel viewModel) {
+  Widget _buildOverviewContent(DoctorProfileViewModel viewModel, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "About Dr. Smith",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          "about_doctor".tr(args: [viewModel.doctorName.split(" ").last]),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textMain,
+          ),
         ),
         const SizedBox(height: 10),
         Text(
           viewModel.aboutText,
-          style: const TextStyle(color: Colors.grey, height: 1.5),
+          style: TextStyle(
+            color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+            height: 1.5,
+          ),
         ),
         const SizedBox(height: 25),
 
@@ -366,19 +427,23 @@ class _DoctorProfileBody extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
+                color: AppColors.primaryBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.school_outlined,
-                color: Color(0xFF3B82F6),
+                color: AppColors.primaryBlue,
                 size: 20,
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              "Education",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              "education_label".tr(),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.textMain,
+              ),
             ),
           ],
         ),
@@ -394,29 +459,45 @@ class _DoctorProfileBody extends StatelessWidget {
                   width: 10,
                   height: 10,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF3B82F6),
+                    color: AppColors.primaryBlue,
                     shape: BoxShape.circle,
                   ),
                 ),
-                Container(width: 2, height: 40, color: const Color(0xFFEFF6FF)),
+                Container(
+                  width: 2,
+                  height: 40,
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                ),
               ],
             ),
             const SizedBox(width: 15),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "2012",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: TextStyle(
+                      color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                      fontSize: 12,
+                    ),
                   ),
                   Text(
                     "MBBS, MD in Cardiology",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textMain,
+                    ),
                   ),
                   Text(
                     "Cairo University Faculty of Medicine",
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                    style: TextStyle(
+                      color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -425,9 +506,13 @@ class _DoctorProfileBody extends StatelessWidget {
         ),
         const SizedBox(height: 25),
 
-        const Text(
-          "Specializations",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          "specializations_label".tr(),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textMain,
+          ),
         ),
         const SizedBox(height: 15),
         Wrap(
@@ -438,9 +523,9 @@ class _DoctorProfileBody extends StatelessWidget {
                 (spec) => Chip(
                   label: Text(
                     spec,
-                    style: const TextStyle(color: Color(0xFF3B82F6)),
+                    style: const TextStyle(color: AppColors.primaryBlue),
                   ),
-                  backgroundColor: const Color(0xFFEFF6FF),
+                  backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -455,7 +540,8 @@ class _DoctorProfileBody extends StatelessWidget {
 }
 
 // ==================== [ محتوى تبويب التقييمات ] ====================
-Widget _buildReviewsContent(DoctorProfileViewModel viewModel) {
+Widget _buildReviewsContent(DoctorProfileViewModel viewModel, bool isDark) {
+  final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textMain;
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -464,8 +550,12 @@ Widget _buildReviewsContent(DoctorProfileViewModel viewModel) {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            "Patient Reviews (${viewModel.reviewsCount})",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            "patient_reviews_count".tr(args: [viewModel.reviewsCount.toString()]),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textPrimary,
+            ),
           ),
 
           // القائمة المنسدلة (Dropdown) بدون خط سفلي
@@ -474,10 +564,10 @@ Widget _buildReviewsContent(DoctorProfileViewModel viewModel) {
               value: viewModel.selectedSortOption,
               icon: const Icon(
                 Icons.keyboard_arrow_down,
-                color: Color(0xFF3B82F6),
+                color: AppColors.primaryBlue,
               ),
               style: const TextStyle(
-                color: Color(0xFF3B82F6),
+                color: AppColors.primaryBlue,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -501,13 +591,15 @@ Widget _buildReviewsContent(DoctorProfileViewModel viewModel) {
       const SizedBox(height: 20),
 
       // 2. قائمة التقييمات (نستخدم Spread Operator لرسم الكروت)
-      ...viewModel.reviewsList.map((review) => _buildReviewCard(review)),
+      ...viewModel.reviewsList.map(
+        (review) => _buildReviewCard(review, isDark),
+      ),
     ],
   );
 }
 
 // ==================== [ ويدجت كارت التقييم الواحد ] ====================
-Widget _buildReviewCard(Map<String, dynamic> review) {
+Widget _buildReviewCard(Map<String, dynamic> review, bool isDark) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 25), // مسافة بين كل تقييم والآخر
     child: Row(
@@ -516,11 +608,11 @@ Widget _buildReviewCard(Map<String, dynamic> review) {
         // الحرف الأول في دائرة
         CircleAvatar(
           radius: 22,
-          backgroundColor: const Color(0xFFEFF6FF), // أزرق فاتح جداً
+          backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
           child: Text(
-            review['name'].toString().substring(0, 1), // أخذ أول حرف فقط
+            review['name'].toString().substring(0, 1),
             style: const TextStyle(
-              color: Color(0xFF3B82F6),
+              color: AppColors.primaryBlue,
               fontWeight: FontWeight.bold,
               fontSize: 18,
             ),
@@ -535,15 +627,21 @@ Widget _buildReviewCard(Map<String, dynamic> review) {
             children: [
               Text(
                 review['name'],
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.textMain,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 review['date'],
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                style: TextStyle(
+                  color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                  fontSize: 12,
+                ),
               ),
               const SizedBox(height: 5),
 
@@ -552,7 +650,7 @@ Widget _buildReviewCard(Map<String, dynamic> review) {
                 children: List.generate(5, (index) {
                   return Icon(
                     index < review['rating'] ? Icons.star : Icons.star_border,
-                    color: const Color(0xFFFBBF24), // لون ذهبي
+                    color: AppColors.warningLight,
                     size: 16,
                   );
                 }),
@@ -562,8 +660,10 @@ Widget _buildReviewCard(Map<String, dynamic> review) {
               // نص التعليق
               Text(
                 review['comment'],
-                style: const TextStyle(
-                  color: Color(0xFF4B5563), // رمادي داكن
+                style: TextStyle(
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : const Color(0xFF4B5563),
                   height: 1.5, // المسافة بين السطور
                   fontSize: 14,
                 ),
@@ -580,31 +680,28 @@ Widget _buildReviewCard(Map<String, dynamic> review) {
 Widget _buildClinicsContent(
   BuildContext context,
   DoctorProfileViewModel viewModel,
+  bool isDark,
 ) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       // 1. زر إضافة عيادة
-      // داخل _buildClinicsContent، قم بتعديل زر "Add Clinic"
       SizedBox(
         width: double.infinity,
         child: ElevatedButton(
           onPressed: () async {
-            // 🚀 الانتقال للشاشة الجديدة (Full Screen)
             final newClinicData = await Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AddClinicView()),
             );
 
-            // إذا عاد الطبيب ببيانات (ضغط Save)
             if (newClinicData != null) {
               viewModel.addClinic(
                 ClinicModel(
                   name: newClinicData['name'],
                   address: newClinicData['address'],
                   price: newClinicData['price'],
-                  phone:
-                      "+20 100 000 0000", // أضف حقل التليفون للشاشة الجديدة لاحقاً
+                  phone: "+20 100 000 0000",
                   hours: newClinicData['hours'],
                   lat: 30.0444,
                   lng: 31.2357,
@@ -613,15 +710,15 @@ Widget _buildClinicsContent(
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
+            backgroundColor: AppColors.primaryBlue,
             padding: const EdgeInsets.symmetric(vertical: 15),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
           ),
-          child: const Text(
-            "Add Clinic",
-            style: TextStyle(
+          child: Text(
+            "add_clinic_btn".tr(),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -632,20 +729,22 @@ Widget _buildClinicsContent(
       const SizedBox(height: 20),
 
       // 2. عرض كروت العيادات
-      ...viewModel.clinics.map((clinic) => _buildClinicCard(clinic)),
+      ...viewModel.clinics.map((clinic) => _buildClinicCard(clinic, isDark)),
     ],
   );
 }
 
 // ==================== [ كارت العيادة الواحدة ] ====================
-Widget _buildClinicCard(ClinicModel clinic) {
+Widget _buildClinicCard(ClinicModel clinic, bool isDark) {
   return Container(
     margin: const EdgeInsets.only(bottom: 20),
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: isDark ? AppColors.darkSurface : Colors.white,
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.grey.shade200),
+      border: Border.all(
+        color: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+      ),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,22 +756,25 @@ Widget _buildClinicCard(ClinicModel clinic) {
             Expanded(
               child: Text(
                 clinic.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.textMain,
                 ),
               ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
+                color: AppColors.primaryBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 clinic.price,
-                style: const TextStyle(
-                  color: Color(0xFF3B82F6),
+                style: TextStyle(
+                  color: isDark ? AppColors.primaryBlue : AppColors.primaryBlue,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -687,14 +789,17 @@ Widget _buildClinicCard(ClinicModel clinic) {
           children: [
             const Icon(
               Icons.location_on_outlined,
-              color: Color(0xFF3B82F6),
+              color: AppColors.primaryBlue,
               size: 20,
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 clinic.address,
-                style: const TextStyle(color: Colors.grey, height: 1.5),
+                style: TextStyle(
+                  color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                  height: 1.5,
+                ),
               ),
             ),
           ],
@@ -709,10 +814,10 @@ Widget _buildClinicCard(ClinicModel clinic) {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "PHONE NUMBER",
                     style: TextStyle(
-                      color: Colors.grey,
+                      color: isDark ? AppColors.darkTextSecondary : Colors.grey,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
@@ -720,7 +825,12 @@ Widget _buildClinicCard(ClinicModel clinic) {
                   const SizedBox(height: 5),
                   Text(
                     clinic.phone,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textMain,
+                    ),
                   ),
                 ],
               ),
@@ -729,10 +839,10 @@ Widget _buildClinicCard(ClinicModel clinic) {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "WORKING HOURS",
                     style: TextStyle(
-                      color: Colors.grey,
+                      color: isDark ? AppColors.darkTextSecondary : Colors.grey,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
@@ -740,9 +850,12 @@ Widget _buildClinicCard(ClinicModel clinic) {
                   const SizedBox(height: 5),
                   Text(
                     clinic.hours,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       height: 1.5,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textMain,
                     ),
                   ),
                 ],
@@ -766,11 +879,11 @@ Widget _buildClinicCard(ClinicModel clinic) {
                   errorBuilder: (context, error, stackTrace) => Container(
                     width: 100,
                     height: 100,
-                    color: Colors.white24,
-                    child: const Icon(
-                      Icons.person,
+                    color: isDark ? Colors.black26 : Colors.white24,
+                    child: Icon(
+                      Icons.map_outlined,
                       size: 50,
-                      color: Colors.white54,
+                      color: isDark ? AppColors.darkTextSecondary : Colors.white54,
                     ),
                   ),
                   "https://media.wired.com/photos/59269cd37034dc5f91bec0f1/master/pass/GoogleMapTA.jpg",
@@ -790,17 +903,25 @@ Widget _buildClinicCard(ClinicModel clinic) {
                         await launchUrl(url);
                       }
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.map_outlined,
-                      color: Colors.black87,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : Colors.black87,
                       size: 18,
                     ),
-                    label: const Text(
+                    label: Text(
                       "Open in Maps",
-                      style: TextStyle(color: Colors.black87),
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : Colors.black87,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: isDark
+                          ? AppColors.darkSurface
+                          : Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

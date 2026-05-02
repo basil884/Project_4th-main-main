@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // ✅ للتعامل مع حافظة الهاتف (Clipboard)
-import 'package:url_launcher/url_launcher.dart'; // ✅ للتعامل مع الخرائط
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:sugar_wise/core/theme/app_colors.dart';
 import '../../models/clinic_model.dart';
 
 class BookAppointmentSheet extends StatefulWidget {
@@ -23,7 +24,7 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
       const SnackBar(
         content: Text("Address copied to clipboard!"),
         duration: Duration(seconds: 2),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.brandGreen,
       ),
     );
   }
@@ -112,12 +113,12 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.location_on,
-                    color: Colors.blue,
+                    color: AppColors.primaryBlue,
                     size: 20,
                   ),
                 ),
@@ -170,7 +171,7 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
                           style: TextStyle(fontSize: 12),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2962FF),
+                          backgroundColor: AppColors.primaryBlue,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           elevation: 0,
@@ -272,7 +273,7 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text("Processing Payment..."),
-                          backgroundColor: Colors.blue,
+                          backgroundColor: AppColors.primaryBlue,
                         ),
                       );
                     }
@@ -323,10 +324,10 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
     required VoidCallback? onTap,
   }) {
     Color borderColor = isSelected
-        ? Colors.blue
+        ? AppColors.primaryBlue
         : (isDark ? Colors.grey[700]! : Colors.grey[300]!);
     Color textColor = isSelected
-        ? Colors.blue
+        ? AppColors.primaryBlue
         : (isBooked
               ? Colors.red[300]!
               : (isDark ? Colors.grey[400]! : Colors.grey[600]!));
@@ -337,7 +338,7 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.blue.withValues(alpha: 0.1)
+              ? AppColors.primaryBlue.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(

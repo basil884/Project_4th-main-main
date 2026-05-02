@@ -440,7 +440,7 @@ class _Insulin extends State<InsulCalculatorPatient> {
 
 import 'package:flutter/material.dart';
 import 'package:sugar_wise/features/patient/insulin_calculator_patient/model/model_insulin.dart';
-import 'package:sugar_wise/features/patient/insulin_calculator_patient/view/insulin_unit.dart';
+import 'package:sugar_wise/features/patient/insulin_calculator_patient/view/insulin.dart';
 
 class Insulin1 extends StatefulWidget {
   const Insulin1({super.key});
