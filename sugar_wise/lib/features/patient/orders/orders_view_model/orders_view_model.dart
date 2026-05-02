@@ -58,24 +58,22 @@ class OrdersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // إضافة طلب جديد من المتجر
-  void addOrderFromProduct(String name, String image, double price) {
-    _allOrders.insert(
-      0,
-      OrderModel(
-        id: "#ORD-${7831 + _allOrders.length}",
-        title: name,
-        price: price,
-        status: "Processing",
-        imageUrl: image,
-      ),
-    );
-    notifyListeners();
+  // التحقق من وجود المنتج في السلة
+  bool isProductInOrders(String productName) {
+    return _allOrders.any((order) => order.title == productName);
   }
 
-  // التحقق مما إذا كان المنتج مضافاً مسبقاً (بالاسم)
-  bool isProductInOrders(String name) {
-    return _allOrders.any((order) => order.title == name);
+  // إضافة منتج جديد للطلبات
+  void addOrderFromProduct(String title, String imageUrl, double price) {
+    final newOrder = OrderModel(
+      id: "#ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(5, 11)}",
+      title: title,
+      price: price,
+      status: "Processing",
+      imageUrl: imageUrl,
+    );
+    _allOrders.insert(0, newOrder);
+    notifyListeners();
   }
 
   // تتبع الطلب

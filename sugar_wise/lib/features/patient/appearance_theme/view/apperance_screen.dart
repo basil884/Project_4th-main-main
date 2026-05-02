@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:sugar_wise/features/patient/appearance_theme/view/apperance_card.dart';
 import 'package:sugar_wise/features/patient/appearance_theme/model/apperance_models.dart';
 import 'package:sugar_wise/features/patient/notfications_patient/notifactions_edit/view/notifaction_edit.dart';
@@ -15,7 +14,7 @@ class AppearanceScreen extends StatelessWidget {
 
     final List<SettingModel> otherSettings = [
       SettingModel(
-        title: "notifications".tr(),
+        title: "Notifications",
         assetImage: "assets/images/apperance/Container.png",
         iconColor: Colors.orange,
         onTap: () {
@@ -26,7 +25,7 @@ class AppearanceScreen extends StatelessWidget {
         },
       ),
       SettingModel(
-        title: "privacy_security".tr(),
+        title: "Privacy & Security",
         assetImage: "assets/images/apperance/Iconc.png",
         iconColor: Colors.teal,
         onTap: () {
@@ -49,7 +48,7 @@ class AppearanceScreen extends StatelessWidget {
           ),
         ),
         title: Text(
-          "appearance_theme".tr(),
+          "Appearance & Theme",
           style: TextStyle(
             color: textColor, // ✅ متجاوب
             fontWeight: FontWeight.w800,
@@ -63,7 +62,7 @@ class AppearanceScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "appearance_theme".tr(),
+              "Appearance & Theme",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -74,7 +73,7 @@ class AppearanceScreen extends StatelessWidget {
             const AppearanceCard(),
             const SizedBox(height: 35),
             Text(
-              "other_settings".tr(),
+              "OTHER SETTINGS",
               style: TextStyle(
                 color: isDark ? Colors.grey.shade500 : Colors.grey, // ✅ متجاوب
                 fontWeight: FontWeight.bold,

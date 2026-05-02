@@ -23,21 +23,25 @@ class _Insulin extends State<Insulin> {
       name: "White Rice (1 cup)",
       carbs: "45g",
       image: "assets/images/insulation/WhiteRice.png",
+      type: "FooD",
     ),
     FoodModel2(
       name: "Grilled Chicken",
       carbs: "0g",
       image: "assets/images/insulation/GrilledChicken.png",
+      type: "FooD",
     ),
     FoodModel2(
       name: "Pasta (1 cup)",
       carbs: "43g",
       image: "assets/images/insulation/Donut.png",
+      type: "FooD",
     ),
     FoodModel2(
       name: "Pizza Slice",
       carbs: "36g",
       image: "assets/images/insulation/PizzaSlice.png",
+      type: "FooD",
     ),
   ];
 

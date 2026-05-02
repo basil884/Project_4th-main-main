@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sugar_wise/features/patient/Shop/FilterPage.dart';
+import 'package:sugar_wise/features/patient/Shop/Shop%20page/ProductView.dart';
+import 'package:sugar_wise/features/patient/Shop/Shop%20page/cartpage.dart';
+import 'package:sugar_wise/features/patient/Shop/Shop%20page/filterPage.dart';
 import 'package:sugar_wise/features/patient/Shop/model.dart';
+import 'package:sugar_wise/features/patient/Shop/Checkout/checkout_screen.dart';
 
 class Shop extends StatefulWidget {
   const Shop({super.key});
@@ -16,17 +19,17 @@ class _ProductsPageState extends State<Shop> {
   List<ProductModel> productsList = [
     ProductModel(
       name: "Accu-Chek Instant",
-      image: "assets/images/Shop/product1.png",
+      image: "assets/images/shop/product1.png",
     ),
-    ProductModel(name: "Insulin Pen", image: "assets/images/Shop/product1.png"),
-    ProductModel(name: "Insulin Pen", image: "assets/images/Shop/product1.png"),
-    ProductModel(name: "Insulin Pen", image: "assets/images/Shop/product1.png"),
-    ProductModel(name: "Insulin Pen", image: "assets/images/Shop/product1.png"),
-    ProductModel(name: "Insulin Pen", image: "assets/images/Shop/product1.png"),
-    ProductModel(name: "Insulin Pen", image: "assets/images/Shop/product1.png"),
+    ProductModel(name: "Insulin Pen", image: "assets/images/shop/product1.png"),
+    ProductModel(name: "Insulin Pen", image: "assets/images/shop/product1.png"),
+    ProductModel(name: "Insulin Pen", image: "assets/images/shop/product1.png"),
+    ProductModel(name: "Insulin Pen", image: "assets/images/shop/product1.png"),
+    ProductModel(name: "Insulin Pen", image: "assets/images/shop/product1.png"),
+    ProductModel(name: "Insulin Pen", image: "assets/images/shop/product1.png"),
     ProductModel(
       name: "Glucose Test Strips",
-      image: "assets/images/Shop/product1.png",
+      image: "assets/images/shop/product1.png",
     ),
   ];
 
@@ -45,7 +48,7 @@ class _ProductsPageState extends State<Shop> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xfff9fafb),
+      backgroundColor: const Color(0xfff9fafb),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -54,7 +57,7 @@ class _ProductsPageState extends State<Shop> {
           children: [
             Image.asset("assets/images/logo/logoIcon.png", height: 30),
             const SizedBox(width: 8),
-            Image.asset("assets/images/Shop/Suger_Wise_Logo 2.png", height: 30),
+            Image.asset("assets/images/logo/logoText.png", height: 30),
           ],
         ),
         actions: [IconButton(icon: const Icon(Icons.menu), onPressed: () {})],
@@ -113,34 +116,42 @@ class _ProductsPageState extends State<Shop> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(
-                          alpha: 0.3,
-                        ), // ظل خفيف للبارز
+                        color: Colors.grey.withOpacity(0.3),
                         spreadRadius: 2,
                         blurRadius: 8,
-                        offset: const Offset(0, 4), // الظل تحت الكارد
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: Column(
                     children: [
-                      // 🔹 صورة المنتج مع خلفية رصاصية
+                      // 🔹 صورة المنتج - أصبحت قابلة للضغط الآن
                       Expanded(
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: const Color(0xffe3e5e6),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.all(8),
-                          child: Image.asset(
-                            product.image,
-                            fit: BoxFit.contain,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ProductView(product: product),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: const Color(0xffe3e5e6),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Image.asset(
+                              product.image,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // القسم اللي فوق اسم الفئة
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -159,40 +170,41 @@ class _ProductsPageState extends State<Shop> {
                         ),
                       ),
                       const SizedBox(height: 5),
-                      // اسم المنتج
                       Text(
                         product.name,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 5),
-                      // التقييم بالدوائر
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(5, (i) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
-                            child: Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: i < 4
-                                    ? const Color(0xFFFFCD29)
-                                    : Colors.grey,
-                              ),
+                            child: Icon(
+                              i < 4 ? Icons.star : Icons.star_border,
+                              size: 14,
+                              color: i < 4
+                                  ? const Color(0xFFFFCD29)
+                                  : Colors.grey,
                             ),
                           );
                         }),
                       ),
                       const SizedBox(height: 8),
-                      // أزرار الشراء و الكارت
                       Row(
                         children: [
                           Expanded(
                             child: SizedBox(
                               height: 40,
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Checkout(),
+                                    ),
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.black,
                                   padding: EdgeInsets.zero,
@@ -219,7 +231,14 @@ class _ProductsPageState extends State<Shop> {
                             child: SizedBox(
                               height: 40,
                               child: ElevatedButton.icon(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const CartPage(),
+                                    ),
+                                  );
+                                },
                                 icon: const Icon(
                                   Icons.shopping_cart,
                                   size: 18,

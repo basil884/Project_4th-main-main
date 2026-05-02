@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/about_us_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/blog_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/careers_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/compliance_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/contact_us_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/cookie_policy_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/data_protection_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/educational_games_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/faqs_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/medical_disclaimer_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/monitoring_dashboard_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/our_mission_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/press_media_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/privacy_policy_view.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/terms_of_service_view.dart';
 import 'package:sugar_wise/features/doctor/doctor_view_patient/view/doctor_view_patient.dart';
-import 'package:sugar_wise/features/patient/Shop/shop.dart';
 import 'package:sugar_wise/features/patient/insulin_calculator_patient/view/insulin_calculator_patient.dart';
 import 'package:sugar_wise/features/patient/orders/view/orders_view.dart';
-
 import 'package:sugar_wise/features/patient/patient_profile/view/profile_view.dart';
 import 'package:sugar_wise/features/patient/patient_profile/view_models/profile_view_model.dart';
 import 'package:sugar_wise/features/patient/seetings/setting_screen.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/about_us_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/our_mission_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/careers_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/press_media_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/contact_us_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/blog_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/monitoring_dashboard_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/educational_games_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/cookie_policy_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/data_protection_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/compliance_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/medical_disclaimer_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/privacy_policy_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/terms_of_service_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/faqs_view.dart';
 
 class CustomSidebar extends StatelessWidget {
   CustomSidebar({super.key});
@@ -30,15 +28,18 @@ class CustomSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     // عرض 75% من الشاشة كما طلبنا في التصميم الأول
     final screenWidth = MediaQuery.of(context).size.width;
     const Color primaryTeal = Color(
-      0xFF28B5B5,
-    ); // اللون المميز للتصميم الأول (Teal)
+      0xFF2F80ED,
+    ); // Updated to match gradient theme blue
 
     return Drawer(
       width: screenWidth * 0.75,
-      backgroundColor: Colors.white,
+      backgroundColor: isDark
+          ? Theme.of(context).scaffoldBackgroundColor
+          : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(right: Radius.circular(30)),
       ),
@@ -56,9 +57,13 @@ class CustomSidebar extends StatelessWidget {
               bottom: 20,
               right: 20,
             ),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE0F7FA), // الخلفية السيان الفاتحة المريحة
-              borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.grey[900]
+                  : const Color(0xFFE0F7FA), // الخلفية السيان الفاتحة المريحة
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(30),
+              ),
             ),
             child: GestureDetector(
               onTap: () {
@@ -99,10 +104,10 @@ class CustomSidebar extends StatelessWidget {
                   const SizedBox(height: 15),
                   Text(
                     ProfileViewModel().patientData.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
+                      color: isDark ? Colors.white : const Color(0xFF1F2937),
                     ),
                   ),
                   const Text(
@@ -166,10 +171,12 @@ class CustomSidebar extends StatelessWidget {
                   _buildDrawerItem(
                     context,
                     Icons.shopping_bag,
-                    "shop",
+                    "shoop",
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const Shop()),
+                      MaterialPageRoute(
+                        builder: (context) => const OrdersView(),
+                      ),
                     ),
                   ),
                   _buildDrawerItem(
@@ -189,7 +196,7 @@ class CustomSidebar extends StatelessWidget {
                     "Insulin Units",
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => Insulin1()),
+                      MaterialPageRoute(builder: (context) => const Insulin1()),
                     ),
                   ),
                   _buildDrawerItem(
@@ -245,7 +252,7 @@ class CustomSidebar extends StatelessWidget {
           // ==========================================
           // 3. الفوتر (Primary Navigation)
           // ==========================================
-          const Divider(color: Colors.black12),
+          Divider(color: isDark ? Colors.grey[800] : Colors.black12),
           Padding(
             padding: const EdgeInsets.only(bottom: 30, top: 5),
             child: Column(
@@ -308,7 +315,8 @@ class CustomSidebar extends StatelessWidget {
     bool isLogout = false,
     void Function()? onTap,
   }) {
-    const Color primaryTeal = Color(0xFF257BF4);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const Color primaryTeal = Color(0xFF2F80ED);
 
     return Container(
       margin: const EdgeInsets.only(
@@ -326,7 +334,9 @@ class CustomSidebar extends StatelessWidget {
           icon,
           color: isLogout
               ? Colors.redAccent
-              : (isSelected ? primaryTeal : Colors.black54),
+              : (isSelected
+                    ? primaryTeal
+                    : (isDark ? Colors.grey[400] : Colors.black54)),
           size: 24,
         ),
         title: Text(
@@ -334,7 +344,9 @@ class CustomSidebar extends StatelessWidget {
           style: TextStyle(
             color: isLogout
                 ? Colors.redAccent
-                : (isSelected ? primaryTeal : Colors.black87),
+                : (isSelected
+                      ? primaryTeal
+                      : (isDark ? Colors.white : Colors.black87)),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             fontSize: 15,
           ),
@@ -350,20 +362,26 @@ class CustomSidebar extends StatelessWidget {
     String title,
     List<String> children,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(right: 20),
       child: ExpansionTile(
-        leading: Icon(icon, color: Colors.black54, size: 24),
+        leading: Icon(
+          icon,
+          color: isDark ? Colors.grey[400] : Colors.black54,
+          size: 24,
+        ),
         title: Text(
           title,
-          style: const TextStyle(
-            color: Colors.black87,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
             fontWeight: FontWeight.w500,
             fontSize: 15,
           ),
         ),
-        iconColor: const Color(0xFF28B5B5), // تلوين الأيقونة بالسيان عند الفتح
-        collapsedIconColor: Colors.black54,
+        iconColor: const Color(0xFF2F80ED), // تلوين الأيقونة بالسيان عند الفتح
+        collapsedIconColor: isDark ? Colors.grey[400] : Colors.black54,
         childrenPadding: const EdgeInsets.only(left: 55, bottom: 10),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: children.map((childText) {
@@ -478,8 +496,8 @@ class CustomSidebar extends StatelessWidget {
               },
               child: Text(
                 childText,
-                style: const TextStyle(
-                  color: Colors.grey,
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),

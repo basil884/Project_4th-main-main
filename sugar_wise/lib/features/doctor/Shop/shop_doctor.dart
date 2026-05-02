@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/Shop/filterPage.dart';
 import 'package:sugar_wise/features/doctor/Shop/model.dart';
+import 'package:sugar_wise/features/doctor/orders/orders_view_model/orders_view_model.dart';
 import 'package:sugar_wise/features/doctor/orders/view/orders_view.dart';
-import 'package:sugar_wise/features/patient/orders/orders_view_model/orders_view_model.dart';
 
 class ShopDoctor extends StatefulWidget {
   const ShopDoctor({super.key});

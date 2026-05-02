@@ -19,7 +19,7 @@ class _BotChatSheetState extends State<BotChatSheet> {
 
   // 🔥 متغيرات الذكاء الاصطناعي (Gemini)
   // ضع الـ API Key الخاص بك هنا (مؤقتاً للتجربة، وفي الإنتاج يفضل وضعه في ملف .env)
-  final String apiKey = "AIzaSyCihf66AO5zhcfLR8ZeuwmrDIXEkXpY8ZQ";
+  final String apiKey = "";
   late final GenerativeModel _model;
   late final ChatSession _chatSession;
   bool _isTyping = false; // لإظهار مؤشر التحميل بينما البوت يفكر

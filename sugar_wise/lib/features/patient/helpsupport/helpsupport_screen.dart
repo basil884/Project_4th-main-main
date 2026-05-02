@@ -1,34 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:sugar_wise/core/theme/app_colors.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : const Color(0xFFF3F4F6),
+      backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
-        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+        backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: InkWell(
           onTap: () => Navigator.pop(context),
-          child: Icon(
-            Icons.arrow_back,
-            color: isDark ? AppColors.darkTextPrimary : Colors.black,
-            size: 22,
-          ),
+          child: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
         ),
-        title: Text(
-          "help_support".tr(),
+        title: const Text(
+          "Help & Support",
           style: TextStyle(
-            color: isDark ? AppColors.darkTextPrimary : const Color(0xff0F172A),
+            color: Color(0xff0F172A),
             fontSize: 20,
             fontWeight: FontWeight.w900,
           ),
@@ -41,65 +31,53 @@ class HelpSupportScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              Text(
-                "help_support".tr(),
+              const Text(
+                "Help & Support",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
-                  color: isDark
-                      ? AppColors.darkTextPrimary
-                      : const Color(0xff0F172A),
+                  color: Color(0xff0F172A),
                   letterSpacing: -0.5,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                "how_can_we_help".tr(),
-                style: TextStyle(
-                  color: isDark
-                      ? AppColors.darkTextSecondary
-                      : Colors.grey.shade500,
-                  fontSize: 15,
-                ),
+                "How can we help you today?",
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
               ),
               const SizedBox(height: 32),
 
               _buildSupportCard(
                 imagePath: "assets/images/support/Email.png",
-                title: "email_us".tr(),
-                subtitle: "email_response".tr(),
-                isDark: isDark,
+                title: "Email Us",
+                subtitle: "Response within 24h",
               ),
               _buildSupportCard(
                 imagePath: "assets/images/support/Call.png",
-                title: "call_us".tr(),
+                title: "Call Us",
                 subtitle: "+20 123 456 789",
-                isDark: isDark,
               ),
               _buildSupportCard(
                 imagePath: "assets/images/support/Live.png",
-                title: "live_chat".tr(),
-                subtitle: "chat_time".tr(),
-                isDark: isDark,
+                title: "Live Chat",
+                subtitle: "Available 9am - 5pm",
               ),
 
               const SizedBox(height: 35),
-              Text(
-                "faq".tr(),
+              const Text(
+                "Frequently Asked Questions",
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
-                  color: isDark
-                      ? AppColors.darkTextPrimary
-                      : const Color(0xff0F172A),
+                  color: Color(0xff0F172A),
                 ),
               ),
               const SizedBox(height: 20),
 
-              _buildFAQTile("faq_1".tr(), "faq_1_ans".tr(), false, isDark),
-              _buildFAQTile("faq_2".tr(), "faq_2_ans".tr(), true, isDark),
-              _buildFAQTile("faq_3".tr(), "faq_3_ans".tr(), false, isDark),
-              _buildFAQTile("faq_4".tr(), "faq_4_ans".tr(), false, isDark),
+              _buildFAQTile("How do I reset my password?", false),
+              _buildFAQTile("Can I change my email address?", true),
+              _buildFAQTile("How to sync my glucose monitor?", false),
+              _buildFAQTile("Privacy policy and data security?", false),
 
               const SizedBox(height: 40),
             ],
@@ -113,19 +91,17 @@ class HelpSupportScreen extends StatelessWidget {
     required String imagePath,
     required String title,
     required String subtitle,
-    required bool isDark,
   }) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -147,39 +123,30 @@ class HelpSupportScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.w900,
               fontSize: 17,
-              color: isDark
-                  ? AppColors.darkTextPrimary
-                  : const Color(0xff1F2937),
+              color: Color(0xff1F2937),
             ),
           ),
           const SizedBox(height: 6),
           Text(
             subtitle,
-            style: TextStyle(
-              color: isDark
-                  ? AppColors.darkTextSecondary
-                  : const Color(0xff9CA3AF),
-              fontSize: 13,
-            ),
+            style: const TextStyle(color: Color(0xff9CA3AF), fontSize: 13),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFAQTile(String title, String answer, bool isExpanded, bool isDark) {
+  Widget _buildFAQTile(String title, bool isExpanded) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isExpanded
-              ? const Color(0xFF10B981)
-              : (isDark ? AppColors.darkBorder : Colors.transparent),
+          color: isExpanded ? const Color(0xFF10B981) : Colors.transparent,
           width: 1.2,
         ),
       ),
@@ -187,32 +154,28 @@ class HelpSupportScreen extends StatelessWidget {
         initiallyExpanded: isExpanded,
         shape: const RoundedRectangleBorder(side: BorderSide.none),
         iconColor: const Color(0xFF10B981),
-        collapsedIconColor: isDark
-            ? AppColors.darkTextSecondary
-            : const Color(0xff1F2937),
+        collapsedIconColor: const Color(0xff1F2937),
         title: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: isDark ? AppColors.darkTextPrimary : const Color(0xff1F2937),
+            color: Color(0xff1F2937),
           ),
         ),
-        children: [
+        children: const [
           Divider(
-            color: isDark ? AppColors.darkBorder : const Color(0xffF3F4F6),
+            color: Color(0xffF3F4F6),
             thickness: 1,
             indent: 16,
             endIndent: 16,
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 20),
             child: Text(
-              answer,
+              'Yes, you can update your contact email in the "Edit Profile" section under your Account settings.',
               style: TextStyle(
-                color: isDark
-                    ? AppColors.darkTextSecondary
-                    : const Color(0xff6B7280),
+                color: Color(0xff6B7280),
                 fontSize: 14,
                 height: 1.5,
               ),
