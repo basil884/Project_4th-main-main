@@ -1,122 +1,211 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/doctor_home/ViewModel/home_view_model.dart';
 import 'package:sugar_wise/features/doctor/my_patient_to_doctor/my_patients_view_model/my_patients_view_model.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 
-class MyPatientsView extends StatelessWidget {
+class MyPatientsView extends StatefulWidget {
   const MyPatientsView({super.key});
+
+  @override
+  State<MyPatientsView> createState() => _MyPatientsViewState();
+}
+
+class _MyPatientsViewState extends State<MyPatientsView> {
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => MyPatientsViewModel(),
-      child: const _MyPatientsBody(),
-    );
-  }
-}
-
-class _MyPatientsBody extends StatelessWidget {
-  const _MyPatientsBody();
-
-  @override
-  Widget build(BuildContext context) {
-    final viewModel = Provider.of<MyPatientsViewModel>(context);
-
-    return Scaffold(
-      backgroundColor: AppColors.background(context),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Header
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
-                    onPressed: () {
-                      if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
-                      } else {
-                        Provider.of<HomeViewModel>(
-                          context,
-                          listen: false,
-                        ).changeTab(2);
-                      }
-                    },
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "my_patients_title".tr(),
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary(context),
+      child: Consumer<MyPatientsViewModel>(
+        builder: (context, viewModel, child) {
+          return Scaffold(
+            backgroundColor: AppColors.background(context),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 15,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Header
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, size: 20),
+                          onPressed: () {
+                            if (_isSearching) {
+                              setState(() {
+                                _isSearching = false;
+                                _searchController.clear();
+                              });
+                              viewModel.searchPatients("");
+                            } else if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            } else {
+                              Provider.of<HomeViewModel>(
+                                context,
+                                listen: false,
+                              ).changeTab(2);
+                            }
+                          },
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _isSearching
+                              ? TextField(
+                                  controller: _searchController,
+                                  autofocus: true,
+                                  onChanged: (value) {
+                                    viewModel.searchPatients(value);
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: "search_hint".tr(),
+                                    border: InputBorder.none,
+                                    hintStyle: TextStyle(
+                                      color: AppColors.textSecondary(context),
+                                    ),
+                                  ),
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary(context),
+                                    fontSize: 18,
+                                  ),
+                                )
+                              : Text(
+                                  "my_patients_title".tr(),
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary(context),
+                                  ),
+                                ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            _isSearching ? Icons.close : Icons.search,
+                            color: AppColors.textPrimary(context),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              if (_isSearching) {
+                                _isSearching = false;
+                                _searchController.clear();
+                                viewModel.searchPatients("");
+                              } else {
+                                _isSearching = true;
+                              }
+                            });
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Text(
-                "my_patients_desc".tr(),
-                style: TextStyle(
-                  color: AppColors.textSecondary(context),
-                  fontSize: 13,
+                    const SizedBox(height: 5),
+                    Text(
+                      "my_patients_desc".tr(),
+                      style: TextStyle(
+                        color: AppColors.textSecondary(context),
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 2. Add Patient Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () =>
+                            _showAddPatientDialog(context, viewModel),
+                        icon: const Icon(Icons.add),
+                        label: Text(
+                          "add_new_patient".tr(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 3. Patient list
+                    Expanded(
+                      child: viewModel.isLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryBlue,
+                              ),
+                            )
+                          : viewModel.patients.isEmpty
+                          ? Center(
+                              child: Text(
+                                "no_patients_found".tr(),
+                                style: TextStyle(
+                                  color: AppColors.textSecondary(context),
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: viewModel.patients.length,
+                              itemBuilder: (context, index) {
+                                return _buildPatientCard(
+                                  context,
+                                  viewModel,
+                                  viewModel.patients[index],
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-
-              // 2. Add Patient Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showAddPatientDialog(context, viewModel),
-                  icon: const Icon(Icons.add),
-                  label: Text(
-                    "add_new_patient".tr(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // 3. Patient list
-              Expanded(
-                child: ListView.builder(
-                  itemCount: viewModel.patients.length,
-                  itemBuilder: (context, index) {
-                    return _buildPatientCard(
-                      context,
-                      viewModel,
-                      viewModel.patients[index],
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
   // ==================== [ Patient Card ] ====================
+  ImageProvider _getImageProvider(String url) {
+    if (url.startsWith('data:image') || url.contains('base64')) {
+      try {
+        final base64String = url.split(',').last;
+        return MemoryImage(base64Decode(base64String));
+      } catch (e) {
+        return const AssetImage("assets/images/default_doctor.png");
+      }
+    }
+    if (url.toLowerCase().contains("default") || url.contains("..")) {
+      return const NetworkImage(
+        "https://ui-avatars.com/api/?name=P&background=random",
+      );
+    }
+    return NetworkImage(url);
+  }
+
   Widget _buildPatientCard(
     BuildContext context,
     MyPatientsViewModel viewModel,
@@ -139,13 +228,25 @@ class _MyPatientsBody extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Top row: avatar + name + delete icon
           Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.12),
-                child: Icon(Icons.person_outline, color: AppColors.primaryBlue),
+              ClipOval(
+                child: Image(
+                  image: _getImageProvider(patient.imageUrl),
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.primaryBlue.withValues(
+                      alpha: 0.12,
+                    ),
+                    child: Icon(
+                      Icons.person_outline,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -391,9 +492,14 @@ class _MyPatientsBody extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () async {
+                // جلب اسم الدكتور من الـ UserProvider
+                final userProvider = Provider.of<UserProvider>(context, listen: false);
+                final doctorName = userProvider.name;
+
                 bool success = await viewModel.sendFeedback(
                   patient.id,
                   messageController.text,
+                  senderName: doctorName,
                 );
                 if (success && context.mounted) {
                   Navigator.pop(context);

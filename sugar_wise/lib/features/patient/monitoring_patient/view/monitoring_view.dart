@@ -330,7 +330,7 @@ class MonitoringView extends StatelessWidget {
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: const Color(0xFF8EC641).withOpacity(0.18),
+                      color: const Color(0xFF8EC641).withValues(alpha: 0.18),
                     ),
                   ),
                 ],

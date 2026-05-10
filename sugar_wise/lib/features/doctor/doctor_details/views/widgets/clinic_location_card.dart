@@ -5,7 +5,19 @@ import 'book_appointment_sheet.dart';
 
 class ClinicLocationCard extends StatelessWidget {
   final ClinicModel clinic;
-  const ClinicLocationCard({super.key, required this.clinic});
+  final String doctorId;
+  final String doctorName;
+  final String doctorImage;
+  final String specialty;
+
+  const ClinicLocationCard({
+    super.key,
+    required this.doctorId,
+    required this.clinic,
+    required this.doctorName,
+    required this.doctorImage,
+    required this.specialty,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +144,13 @@ class ClinicLocationCard extends StatelessWidget {
                       true, // مهم جداً لكي تأخذ النافذة الارتفاع الذي تحتاجه
                   backgroundColor: Colors
                       .transparent, // لجعل الحواف العلوية الدائرية تظهر بشكل صحيح
-                  builder: (context) => BookAppointmentSheet(clinic: clinic),
+                  builder: (context) => BookAppointmentSheet(
+                    doctorId: doctorId,
+                    clinic: clinic,
+                    doctorName: doctorName,
+                    doctorImage: doctorImage,
+                    specialty: specialty,
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(

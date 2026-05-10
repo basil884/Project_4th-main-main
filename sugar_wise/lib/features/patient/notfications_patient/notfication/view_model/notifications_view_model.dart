@@ -1,64 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:sugar_wise/features/patient/notfications_patient/notfication/model/notification_model.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
 
 class NotificationsViewModel extends ChangeNotifier {
-  // التبويب الافتراضي
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
   String _selectedTab = 'All';
   String get selectedTab => _selectedTab;
 
-  // 1. البيانات الوهمية (مطابقة للصورة تماماً، أول اثنين غير مقروءين)
-  final List<NotificationModel> _notifications = [
-    NotificationModel(
-      id: "1",
-      title: "New Appointment Request",
-      subtitle: "Patient: Sarah Ahmed\nNew request for initial consultation.",
-      time: "2 mins ago",
-      icon: Icons.calendar_today_outlined,
-      iconColor: const Color(0xFF2F66D0),
-      bgColor: const Color(0xFFE8F0FE),
-      isRead: false, // 🔴 غير مقروء
-    ),
-    NotificationModel(
-      id: "2",
-      title: "Critical Lab Result",
-      subtitle: "High glucose levels detected for patient Mohamed...",
-      time: "1 hour ago",
-      icon: Icons.error_outline,
-      iconColor: Colors.redAccent,
-      bgColor: Colors.red.withValues(alpha: 0.1),
-      isRead: false, // 🔴 غير مقروء
-    ),
-    NotificationModel(
-      id: "3",
-      title: "New Patient Registration",
-      subtitle: "Hassan Ibrahim has registered at the downtown clinic.",
-      time: "3 hours ago",
-      icon: Icons.person_add_alt_1_outlined,
-      iconColor: const Color(0xFF9333EA),
-      bgColor: const Color(0xFF9333EA).withValues(alpha: 0.1),
-      isRead: true, // ✅ مقروء
-    ),
-    NotificationModel(
-      id: "4",
-      title: "System Update",
-      subtitle: "The platform will undergo maintenance this Sunday at 2 AM.",
-      time: "1 day ago",
-      icon: Icons.notifications_none_outlined,
-      iconColor: const Color(0xFF667085),
-      bgColor: const Color(0xFFF1F4F9),
-      isRead: true, // ✅ مقروء
-    ),
-    NotificationModel(
-      id: "5",
-      title: "Weekly Report Available",
-      subtitle: "Your weekly clinic performance report is ready for review.",
-      time: "2 days ago",
-      icon: Icons.description_outlined,
-      iconColor: const Color(0xFF10B981),
-      bgColor: const Color(0xFFE6F4EA),
-      isRead: true, // ✅ مقروء
-    ),
-  ];
+  List<NotificationModel> _notifications = [];
+  
+  // دالة جلب الإشعارات الحقيقية من السيرفر
+  Future<void> fetchNotifications(String userId, {String? token}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await ApiClient.getData(
+        endpoint: 'notifications/user/$userId',
+        token: token,
+      );
+      if (response.statusCode == 200) {
+        // السيرفر الحقيقي يرجع البيانات داخل حقل 'data'
+        final List data = response.data['data'] ?? [];
+        _notifications = data.map((json) {
+          return NotificationModel(
+            id: json['_id'],
+            title: json['title'],
+            subtitle: json['message'],
+            time: "Just now", // يمكن تحسينها لاحقاً
+            icon: json['type'] == 'doctor_feedback' ? Icons.message : Icons.notifications,
+            iconColor: const Color(0xFF2F66D0),
+            bgColor: const Color(0xFFE8F0FE),
+            isRead: json['isRead'] ?? false,
+            senderName: json['senderName'] ?? "System",
+          );
+        }).toList();
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching notifications: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   // 2. حساب عدد الإشعارات غير المقروءة (Badge)
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
@@ -85,11 +71,47 @@ class NotificationsViewModel extends ChangeNotifier {
     notifyListeners(); // سيتم تصفير العداد وتحديث الشاشة فوراً
   }
 
-  void markAsRead(String id) {
+  void markAsRead(String id, {String? token}) async {
     final index = _notifications.indexWhere((n) => n.id == id);
     if (index != -1 && !_notifications[index].isRead) {
       _notifications[index].isRead = true;
       notifyListeners();
+      
+      // 🔥 تحديث السيرفر لكي يعرف الدكتور أن المريض قرأ الرسالة
+      try {
+        await ApiClient.putData(
+          endpoint: 'notifications/$id',
+          data: {'isRead': true},
+          token: token,
+        );
+      } catch (e) {
+        debugPrint("❌ Error updating read status: $e");
+      }
+    }
+  }
+
+  // 6. حذف الإشعار من السيرفر والقائمة
+  Future<void> deleteNotification(String id, {String? token}) async {
+    final index = _notifications.indexWhere((n) => n.id == id);
+    if (index != -1) {
+      final removedNotification = _notifications.removeAt(index);
+      notifyListeners();
+
+      try {
+        final response = await ApiClient.deleteData(
+          endpoint: 'notifications/$id',
+          token: token,
+        );
+        if (response.statusCode != 200) {
+           // إذا فشل الحذف في السيرفر، نعيد الإشعار للقائمة
+          _notifications.insert(index, removedNotification);
+          notifyListeners();
+        }
+      } catch (e) {
+        debugPrint("❌ Error deleting notification: $e");
+        _notifications.insert(index, removedNotification);
+        notifyListeners();
+      }
     }
   }
 

@@ -1,10 +1,61 @@
 import 'package:flutter/material.dart';
 
 class ProductModel {
+  final String id;
   final String name;
+  final String description;
+  final double price;
+  final double rate;
+  final String status;
+  final List<String> category;
   final String image;
+  final List<String> images;
 
-  ProductModel({required this.name, required this.image});
+  ProductModel({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.rate,
+    required this.status,
+    required this.category,
+    required this.image,
+    required this.images,
+  });
+
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
+    String img1 = json['image1'] ?? "";
+    if (img1.isNotEmpty &&
+        !img1.startsWith('http') &&
+        !img1.startsWith('assets/')) {
+      img1 = "http://192.168.1.7:5000/images/$img1";
+    } else if (img1.isEmpty) {
+      img1 = "assets/images/Shop/product1.png";
+    }
+
+    List<String> allImages = [img1];
+    for (int i = 2; i <= 4; i++) {
+      String img = json['image$i'] ?? "";
+      if (img.isNotEmpty) {
+        if (!img.startsWith('http') && !img.startsWith('assets/')) {
+          img = "http://192.168.1.7:5000/images/$img";
+        }
+        allImages.add(img);
+      }
+    }
+
+    return ProductModel(
+      id: json['_id'] ?? "",
+      name: json['name'] ?? "Unknown Product",
+      description: json['description'] ?? "",
+      price: (json['price'] ?? 0).toDouble(),
+      rate: (json['rate'] ?? 0).toDouble(),
+      status: json['status'] ?? "Available",
+      category: List<String>.from(json['category'] ?? []),
+      image: img1,
+      images: allImages,
+    );
+  }
 }
 
 ////////////////fltter ////////////////

@@ -38,9 +38,9 @@ class CustomBottomNavBar extends StatelessWidget {
         children: [
           _buildNavItem(Icons.home_filled, 0, isDark),
           _buildNavItem(Icons.calendar_month_outlined, 1, isDark),
-          _buildNavItem(Icons.health_and_safety_outlined, 2, isDark),
+          _buildNavItem(Icons.grid_view_rounded, 2, isDark),
           _buildNavItem(Icons.chat_bubble_outline, 3, isDark),
-          _buildNavItem(Icons.person_outline, 4, isDark),
+          _buildNavItem(Icons.personal_injury_outlined, 4, isDark),
         ],
       ),
     );
@@ -66,8 +66,8 @@ class CustomBottomNavBar extends StatelessWidget {
         ),
         child: Icon(
           icon,
-          color: isSelected 
-              ? Colors.white 
+          color: isSelected
+              ? Colors.white
               : (isDark ? Colors.grey[500] : Colors.grey[400]),
           size: 26,
         ),

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/notfications_doctor/model/model.dart';
 import 'package:sugar_wise/features/doctor/notfications_doctor/view_model/view_model.dart';
+import 'package:sugar_wise/features/doctor/notfications_doctor/view/notification_details_view.dart';
 
 class NotificationsView extends StatelessWidget {
   const NotificationsView({super.key});
@@ -262,103 +263,143 @@ class _NotificationsBody extends StatelessWidget {
     Color readBgColor = Colors
         .transparent; // الأفضل أن يكون شفافاً ليأخذ لون الشاشة الخلفية مباشرة
 
-    return InkWell(
-      onTap: () => viewModel.markAsRead(notification.id),
-      child: Container(
-        color: notification.isRead
-            ? readBgColor
-            : unreadBgColor, // ✅ تطبيق الخلفية الذكية
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // الأيقونة
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                // تعتيم لون خلفية الأيقونة قليلاً في الوضع المظلم
-                color: isDark
-                    ? notification.bgColor.withValues(alpha: 0.2)
-                    : notification.bgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                notification.icon,
-                color: notification.iconColor,
-                size: 24,
-              ),
+    return Dismissible(
+      key: Key(notification.id),
+      direction: DismissDirection.horizontal,
+      // ⬅️ السحب لليسار: حذف
+      secondaryBackground: Container(
+        color: Colors.redAccent,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+      ),
+      // ➡️ السحب لليمين: تمييز كمقروء
+      background: Container(
+        color: AppColors.primaryBlue,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(Icons.done_all, color: Colors.white, size: 28),
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart) {
+          // حذف الإشعار
+          viewModel.deleteNotification(notification.id);
+          return true; 
+        } else if (direction == DismissDirection.startToEnd) {
+          viewModel.markAsRead(notification.id);
+          return false;
+        }
+        return false;
+      },
+      child: InkWell(
+        onTap: () {
+          // 1. تمييز كـ مقروء
+          viewModel.markAsRead(notification.id);
+          
+          // 2. الانتقال لشاشة التفاصيل
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NotificationDetailsView(notification: notification),
             ),
-            const SizedBox(width: 15),
-
-            // النصوص
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          notification.title,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: notification.isRead
-                                ? FontWeight.w600
-                                : FontWeight.w900,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF1D2939), // ✅ لون العنوان
-                          ),
-                        ),
-                      ),
-                      Text(
-                        notification.time,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: notification.isRead
-                              ? (isDark
-                                    ? Colors.grey.shade500
-                                    : Colors.grey.shade500)
-                              : AppColors.primaryBlue,
-                          fontWeight: notification.isRead
-                              ? FontWeight.normal
-                              : FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    notification.subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: notification.isRead
-                          ? (isDark
-                                ? Colors.grey.shade400
-                                : const Color(0xFF667085))
-                          : (isDark
-                                ? Colors.grey.shade300
-                                : const Color(0xFF344054)), // ✅ لون الوصف الذكي
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // النقطة الزرقاء للإشعار الجديد
-            if (!notification.isRead)
+          );
+        },
+        child: Container(
+          color: notification.isRead
+              ? readBgColor
+              : unreadBgColor, // ✅ تطبيق الخلفية الذكية
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // الأيقونة
               Container(
-                margin: const EdgeInsets.only(left: 12, top: 4),
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryBlue,
-                  shape: BoxShape.circle,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  // تعتيم لون خلفية الأيقونة قليلاً في الوضع المظلم
+                  color: isDark
+                      ? notification.bgColor.withValues(alpha: 0.2)
+                      : notification.bgColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  notification.icon,
+                  color: notification.iconColor,
+                  size: 24,
                 ),
               ),
-          ],
+              const SizedBox(width: 15),
+  
+              // النصوص
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            notification.title,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: notification.isRead
+                                  ? FontWeight.w600
+                                  : FontWeight.w900,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1D2939), // ✅ لون العنوان
+                            ),
+                          ),
+                        ),
+                        Text(
+                          notification.time,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: notification.isRead
+                                ? (isDark
+                                      ? Colors.grey.shade500
+                                      : Colors.grey.shade500)
+                                : AppColors.primaryBlue,
+                            fontWeight: notification.isRead
+                                ? FontWeight.normal
+                                : FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      notification.subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: notification.isRead
+                            ? (isDark
+                                  ? Colors.grey.shade400
+                                  : const Color(0xFF667085))
+                            : (isDark
+                                  ? Colors.grey.shade300
+                                  : const Color(0xFF344054)), // ✅ لون الوصف الذكي
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+  
+              // النقطة الزرقاء للإشعار الجديد
+              if (!notification.isRead)
+                Container(
+                  margin: const EdgeInsets.only(left: 12, top: 4),
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryBlue,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,40 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 import 'package:sugar_wise/features/doctor/chat_patient/chat_bot/view/bot_chat_sheet_view.dart';
 import '../view_models/doctor_chats_view_model.dart';
 import 'widgets/chat_search_bar.dart';
 import 'widgets/chat_thread_card.dart';
 
-// ✅ قمنا بإنشاء نسخة ثابتة (Singleton-like behavior) من الـ ViewModel هنا
-// لكي لا يتم مسح البيانات عند الانتقال بين الشاشات في شريط التنقل السفلي
-final patientChatsViewModel = PatientChatsViewModel();
+// The global singleton has been removed. Use Provider.of<DoctorChatsViewModel>(context) instead.
 
-// 1. الواجهة الأساسية التي توفر الـ Provider
-class PatientChatsView extends StatelessWidget {
-  const PatientChatsView({super.key});
+class DoctorChatsView extends StatelessWidget {
+  const DoctorChatsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: patientChatsViewModel,
-      child: const _PatientChatsContent(),
-    );
+    return const _DoctorChatsContent();
   }
 }
 
 // 2. الواجهة المتغيرة (Stateful) التي تحتوي على محتوى الشاشة والبوت
-class _PatientChatsContent extends StatefulWidget {
-  const _PatientChatsContent();
+class _DoctorChatsContent extends StatefulWidget {
+  const _DoctorChatsContent();
 
   @override
-  State<_PatientChatsContent> createState() => _PatientChatsContentState();
+  State<_DoctorChatsContent> createState() => _DoctorChatsContentState();
 }
 
-class _PatientChatsContentState extends State<_PatientChatsContent> {
+class _DoctorChatsContentState extends State<_DoctorChatsContent> {
   // 🔥 متغيرات البوت العائم للتحكم في موقعه وحركته
   Offset _botOffset = Offset.zero;
   bool _isBotInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // جلب الشاتات بمجرد فتح الشاشة
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      if (userProvider.isLoggedIn) {
+        Provider.of<DoctorChatsViewModel>(
+          context,
+          listen: false,
+        ).fetchChats(userProvider.baseUserId, token: userProvider.token);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +56,13 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
       _isBotInitialized = true;
     }
 
-    final viewModel = Provider.of<PatientChatsViewModel>(context);
+    final viewModel = Provider.of<DoctorChatsViewModel>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.scaffoldBackground,
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.scaffoldBackground,
       // 🔥 تم استخدام Stack لكي نضع البوت العائم فوق محتوى الشاشة
       body: Stack(
         children: [
@@ -65,12 +77,16 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
                   const ChatSearchBar(),
                   const SizedBox(height: 20),
                   Expanded(
-                    child: viewModel.filteredChats.isEmpty
+                    child: viewModel.isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : viewModel.filteredChats.isEmpty
                         ? Center(
                             child: Text(
                               "No chats found",
                               style: TextStyle(
-                                color: isDark ? AppColors.darkTextSecondary : Colors.grey,
+                                color: isDark
+                                    ? AppColors.darkTextSecondary
+                                    : Colors.grey,
                               ),
                             ),
                           )
@@ -155,7 +171,9 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.darkSurface : Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 0.5) : null,
+                      border: isDark
+                          ? Border.all(color: AppColors.darkBorder, width: 0.5)
+                          : null,
                       boxShadow: [
                         if (!isDark)
                           BoxShadow(
@@ -170,7 +188,9 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.darkTextPrimary : AppColors.textMain,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.textMain,
                       ),
                     ),
                   ),

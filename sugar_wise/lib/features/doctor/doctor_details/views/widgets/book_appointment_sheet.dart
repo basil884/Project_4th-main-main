@@ -3,11 +3,25 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import '../../models/clinic_model.dart';
+import 'package:sugar_wise/features/patient/add_payment/add_payment.dart';
+import 'package:provider/provider.dart';
+import 'package:sugar_wise/features/doctor/doctor_view_patient/view_models/doctors_view_modle.dart';
 
 class BookAppointmentSheet extends StatefulWidget {
-  final ClinicModel clinic; // ✅ تستقبل العيادة التي تم الضغط عليها
+  final ClinicModel clinic;
+  final String doctorId;
+  final String doctorName;
+  final String doctorImage;
+  final String specialty;
 
-  const BookAppointmentSheet({super.key, required this.clinic});
+  const BookAppointmentSheet({
+    super.key,
+    required this.doctorId,
+    required this.clinic,
+    required this.doctorName,
+    required this.doctorImage,
+    required this.specialty,
+  });
 
   @override
   State<BookAppointmentSheet> createState() => _BookAppointmentSheetState();
@@ -57,6 +71,9 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // تحويل نص الأيام إلى قائمة (List) لنتمكن من عرضها كأزرار
     final List<String> daysList = widget.clinic.availableDays.split(', ');
+
+    final doctorsViewModel = Provider.of<DoctorsViewModel>(context);
+    final bookedSlotsForDoctor = doctorsViewModel.bookedSlots[widget.doctorId] ?? [];
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -230,7 +247,10 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
             spacing: 10,
             runSpacing: 10,
             children: widget.clinic.availableTimes.map((time) {
-              bool isBooked = time == "01:00 PM";
+              // التحقق مما إذا كان الوقت محجوزاً في اليوم المحدد
+              bool isBooked = selectedDay != null && 
+                              bookedSlotsForDoctor.contains("${selectedDay}_$time");
+              
               return _buildSelectionPill(
                 text: time,
                 isSelected: selectedTime == time,
@@ -269,11 +289,21 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
             child: ElevatedButton.icon(
               onPressed: (selectedDay != null && selectedTime != null)
                   ? () {
-                      // تنفيذ كود الدفع أو الحجز هنا
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Processing Payment..."),
-                          backgroundColor: AppColors.primaryBlue,
+                      // إغلاق نافذة الحجز الحالية أولاً لفتح نافذة الدفع بنقاء
+                      Navigator.pop(context);
+
+                      // فتح واجهة الدفع كـ Bottom Sheet
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => AddPyment(
+                          doctorId: widget.doctorId,
+                          doctorName: widget.doctorName,
+                          doctorImage: widget.doctorImage,
+                          specialty: widget.specialty,
+                          selectedDay: selectedDay,
+                          selectedTime: selectedTime,
                         ),
                       );
                     }

@@ -6,6 +6,7 @@ class SpecialtyModel {
 }
 
 class TopDoctorModel {
+  final String id;
   final String name;
   final String specialty;
   final double rating;
@@ -13,6 +14,7 @@ class TopDoctorModel {
   final bool isAvailable;
 
   TopDoctorModel({
+    required this.id,
     required this.name,
     required this.specialty,
     required this.rating,

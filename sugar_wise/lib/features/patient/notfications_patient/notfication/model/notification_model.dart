@@ -8,6 +8,7 @@ class NotificationModel {
   final IconData icon;
   final Color iconColor;
   final Color bgColor;
+  final String senderName; // اسم المرسل (مثل اسم الدكتور)
   bool isRead; // 🔥 الأهم: هل الإشعار مقروء أم لا؟
 
   NotificationModel({
@@ -18,6 +19,7 @@ class NotificationModel {
     required this.icon,
     required this.iconColor,
     required this.bgColor,
+    this.senderName = "System",
     this.isRead = false, // افتراضياً غير مقروء
   });
 }

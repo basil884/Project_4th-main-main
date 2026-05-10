@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/constants/api_keys.dart';
 import 'package:google_generative_ai/google_generative_ai.dart'; // 🚨 تأكد من استيراد هذه المكتبة
 
 // ======================================================================
@@ -19,7 +20,7 @@ class _BotChatSheetState extends State<BotChatSheet> {
 
   // 🔥 متغيرات الذكاء الاصطناعي (Gemini)
   // ضع الـ API Key الخاص بك هنا (مؤقتاً للتجربة، وفي الإنتاج يفضل وضعه في ملف .env)
-  final String apiKey = "";
+  final String apiKey = ApiKeys.geminiApiKey;
   late final GenerativeModel _model;
   late final ChatSession _chatSession;
   bool _isTyping = false; // لإظهار مؤشر التحميل بينما البوت يفكر

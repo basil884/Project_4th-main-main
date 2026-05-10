@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   const PaymentSuccessScreen({super.key});
@@ -14,9 +15,9 @@ class PaymentSuccessScreen extends StatelessWidget {
           onPressed: () =>
               Navigator.of(context).popUntil((route) => route.isFirst),
         ),
-        title: const Text(
-          "Confirmation",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+        title: Text(
+          "confirmation_title".tr(),
+          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -43,18 +44,18 @@ class PaymentSuccessScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Text(
-                        "Payment Successful!",
-                        style: TextStyle(
+                      Text(
+                        "payment_success_msg".tr(),
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        "Your appointment has been\nbooked successfully.",
+                      Text(
+                        "order_placed_msg".tr(),
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       const SizedBox(height: 40),
                       Container(
@@ -65,15 +66,15 @@ class PaymentSuccessScreen extends StatelessWidget {
                         ),
                         child: Column(
                           children: [
-                            _buildSummaryRow("Transaction ID", "#TXN123456789"),
+                            _buildSummaryRow("transaction_id".tr(), "#TXN123456789"),
                             const Divider(height: 30),
                             _buildSummaryRow(
-                              "Amount Paid",
+                              "amount_paid".tr(),
                               "400 EGP",
                               isValueBlue: true,
                             ),
                             const Divider(height: 30),
-                            _buildSummaryRow("Date", "May 02, 2026"),
+                            _buildSummaryRow("date_label".tr(), "May 02, 2026"),
                           ],
                         ),
                       ),
@@ -100,9 +101,9 @@ class PaymentSuccessScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        "Back to Home",
-                        style: TextStyle(
+                      child: Text(
+                        "back_to_home".tr(),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -114,16 +115,16 @@ class PaymentSuccessScreen extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () {
                       // كود تحميل الإيصال هنا
-                      print("Downloading receipt...");
+                      debugPrint("Downloading receipt...");
                     },
                     icon: const Icon(
                       Icons.file_download_outlined,
                       size: 20,
                       color: Color(0xFF1976D2),
                     ),
-                    label: const Text(
-                      "Download Receipt",
-                      style: TextStyle(
+                    label: Text(
+                      "download_receipt".tr(),
+                      style: const TextStyle(
                         color: Color(0xFF1976D2),
                         fontWeight: FontWeight.w500,
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class Stripe3 extends StatefulWidget {
   final VoidCallback onVerify;
@@ -45,18 +46,18 @@ class _Stripe3State extends State<Stripe3> {
 
                 const SizedBox(height: 5),
 
-                const Text(
-                  "Confirm it's you",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  "confirm_identity".tr(),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 8),
 
                 /// Subtitle
-                const Text(
-                  "We've sent a 6-digit verification code to +1 (555) ***-**89",
+                Text(
+                  "otp_sent_msg".tr(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
 
                 const SizedBox(height: 20),
@@ -79,10 +80,10 @@ class _Stripe3State extends State<Stripe3> {
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        "Verify and Pay",
-                        style: TextStyle(
+                        "verify_pay_btn".tr(),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -94,22 +95,22 @@ class _Stripe3State extends State<Stripe3> {
                 const SizedBox(height: 10),
 
                 /// resend
-                const Text(
-                  "Send code to email instead",
-                  style: TextStyle(color: Colors.orange, fontSize: 12),
+                Text(
+                  "send_code_email".tr(),
+                  style: const TextStyle(color: Colors.orange, fontSize: 12),
                 ),
 
                 const SizedBox(height: 10),
 
                 /// secure text
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.lock, size: 14, color: Colors.grey),
-                    SizedBox(width: 5),
+                    const Icon(Icons.lock, size: 14, color: Colors.grey),
+                    const SizedBox(width: 5),
                     Text(
-                      "SECURE ENCRYPTION",
-                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                      "secure_encryption".tr(),
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
                     ),
                   ],
                 ),

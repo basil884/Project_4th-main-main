@@ -1,8 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:sugar_wise/features/auth/register/patient_registration/view_models/patient_registration_view_model.dart';
-import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
 
 class PatientRegistrationView extends StatelessWidget {
   const PatientRegistrationView({super.key});
@@ -606,33 +605,13 @@ class _RegistrationContent extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 flex: 3,
-                child: _buildPrimaryButton(
-                  text: "Complete Profile",
-                  icon: Icons.check_circle,
-                  onPressed: () async {
-                    // 1. تنفيذ دالة التسجيل (حفظ البيانات في الفيو مودل)
-                    // (إذا كانت الدالة تأخذ وقتاً للاتصال بالسيرفر يمكنك إضافة await هنا)
-                    viewModel.submitRegistration(context);
-
-                    // 2. إظهار رسالة ترحيبية صغيرة
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Account Created Successfully! 🎉"),
-                        backgroundColor: Color(0xFF00C897),
+                child: viewModel.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _buildPrimaryButton(
+                        text: "Complete Profile",
+                        icon: Icons.check_circle,
+                        onPressed: () => viewModel.submitRegistration(context),
                       ),
-                    );
-
-                    // 3. الانتقال إلى شاشة تسجيل الدخول وإغلاق جميع الشاشات السابقة
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginView(),
-                      ),
-                      (route) =>
-                          false, // هذه السطر هو الذي يمسح الشاشات السابقة
-                    );
-                  },
-                ),
               ),
             ],
           ),

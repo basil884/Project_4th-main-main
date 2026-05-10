@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart'; // من أجل Uint8List
 import 'package:image_picker/image_picker.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:sugar_wise/core/constants/api_keys.dart';
 
 class CreateDoctorStep3ViewModel extends ChangeNotifier {
   // 🔥 ضع مفتاح الـ API الخاص بك هنا
-  final String apiKey = "AIzaSyCihf66AO5zhcfLR8ZeuwmrDIXEkXpY8ZQ";
+  final String apiKey = ApiKeys.geminiApiKey;
 
   // الحقول النصية والقائمة المنسدلة
   String _universityName = '';

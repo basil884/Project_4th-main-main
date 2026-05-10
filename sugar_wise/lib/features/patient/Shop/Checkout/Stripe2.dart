@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class Stripe2 extends StatelessWidget {
   final VoidCallback onContinue;
@@ -33,9 +34,9 @@ class Stripe2 extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Order Summary",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    "order_summary".tr(),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 15),
 
@@ -50,9 +51,9 @@ class Stripe2 extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _summaryRow("Plan Subscription", "\$0.00"),
+                        _summaryRow("plan_subscription".tr(), "\$0.00"),
                         const SizedBox(height: 5),
-                        _summaryRow("Total", "\$0.00", isBold: true),
+                        _summaryRow("total".tr(), "\$0.00", isBold: true),
                       ],
                     ),
                   ),
@@ -79,9 +80,9 @@ class Stripe2 extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Add a card",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    "add_card".tr(),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 15),
 
@@ -103,9 +104,9 @@ class Stripe2 extends StatelessWidget {
                   /// Exp + CVC
                   Row(
                     children: [
-                      Expanded(child: _inputField(hint: "MM/YY")),
+                      Expanded(child: _inputField(hint: "expiry_date_hint".tr())),
                       const SizedBox(width: 10),
-                      Expanded(child: _inputField(hint: "123")),
+                      Expanded(child: _inputField(hint: "cvc_hint".tr())),
                     ],
                   ),
 
@@ -113,7 +114,7 @@ class Stripe2 extends StatelessWidget {
 
                   /// Country
                   _inputField(
-                    hint: "United States",
+                    hint: "country_hint".tr(),
                     suffix: const Icon(Icons.keyboard_arrow_down),
                   ),
 
@@ -129,10 +130,10 @@ class Stripe2 extends StatelessWidget {
                         color: Colors.black,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          "Continue",
-                          style: TextStyle(
+                          "continue_btn".tr(),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -144,14 +145,14 @@ class Stripe2 extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   /// Secure Text
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.lock, size: 14, color: Colors.grey),
-                      SizedBox(width: 5),
+                      const Icon(Icons.lock, size: 14, color: Colors.grey),
+                      const SizedBox(width: 5),
                       Text(
-                        "Secure SSL Encrypted Payment",
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                        "secure_ssl_msg".tr(),
+                        style: const TextStyle(fontSize: 10, color: Colors.grey),
                       ),
                     ],
                   ),

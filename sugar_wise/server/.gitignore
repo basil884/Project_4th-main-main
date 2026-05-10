@@ -1,0 +1,28 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+dist/
+build/
+.DS_Store
+*.log
+logs/
+
+# 🔐 Sensitive Data
+.keys/
+.secrets/
+api-keys.json
+auth-tokens.json
+*.pem
+*.key
+*.crt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# npm
+npm-debug.log
+yarn-error.log

@@ -1,7 +1,126 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class AddPyment extends StatelessWidget {
-  const AddPyment({super.key});
+import 'package:sugar_wise/features/doctor/doctor_view_patient/model/doctor_model.dart';
+import 'package:sugar_wise/features/doctor/doctor_view_patient/view_models/doctors_view_modle.dart';
+
+class AddPyment extends StatefulWidget {
+  final String? doctorId;
+  final String? doctorName;
+  final String? doctorImage;
+  final String? specialty;
+  final String? selectedDay;
+  final String? selectedTime;
+
+  const AddPyment({
+    super.key,
+    this.doctorId,
+    this.doctorName,
+    this.doctorImage,
+    this.specialty,
+    this.selectedDay,
+    this.selectedTime,
+  });
+
+  @override
+  State<AddPyment> createState() => _AddPymentState();
+}
+
+class _AddPymentState extends State<AddPyment> {
+  bool isLoading = false;
+
+  void _processBooking() async {
+    setState(() => isLoading = true);
+
+    // محاكاة الاتصال بالسيرفر
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      // ✅ إضافة الدكتور فقط إذا كانت البيانات متوفرة (حالة حجز موعد)
+      if (widget.doctorName != null) {
+        Provider.of<DoctorsViewModel>(context, listen: false).addBookedDoctor(
+          DoctorModle(
+            id:
+                widget.doctorId ??
+                DateTime.now().millisecondsSinceEpoch.toString(),
+            name: widget.doctorName!,
+            specialty: widget.specialty ?? "Medical Specialist",
+            image: widget.doctorImage ?? "assets/images/default_doctor.png",
+            rating: 4.8,
+            expYears: 10,
+            age: 35,
+            workplace: "SugarWise Clinic",
+            location: "Cairo, Egypt",
+            biograph: "",
+          ),
+        );
+
+        // ✅ تسجيل الوقت كـ "محجوز"
+        if (widget.selectedDay != null &&
+            widget.selectedTime != null &&
+            widget.doctorId != null) {
+          Provider.of<DoctorsViewModel>(
+            context,
+            listen: false,
+          ).markSlotAsBooked(
+            widget.doctorId!,
+            widget.selectedDay!,
+            widget.selectedTime!,
+          );
+        }
+      }
+
+      setState(() => isLoading = false);
+
+      // إغلاق نافذة الدفع
+      Navigator.pop(context);
+
+      // إظهار رسالة النجاح
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Theme.of(context).cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green, size: 80),
+              const SizedBox(height: 20),
+              const Text(
+                "Appointment Booked!",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                "Your appointment has been successfully scheduled. You can view details in your dashboard.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 25),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Awesome!",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +167,7 @@ class AddPyment extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Add Payment Method",
+                  "Confirm & Book",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -77,59 +196,23 @@ class AddPyment extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Name Field
-            TextField(
-              style: TextStyle(color: textColor), // ✅ لون النص المدخل
-              decoration: InputDecoration(
-                hintText: "e.g. Ahmed Mohamed",
-                hintStyle: TextStyle(
-                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
-                ),
-                filled: true,
-                fillColor: fieldBgColor, // ✅ متجاوب
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: isDark
-                      ? BorderSide(color: Colors.grey.shade800)
-                      : BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: isDark
-                      ? BorderSide(color: Colors.grey.shade800)
-                      : BorderSide.none,
-                ),
-              ),
+            _buildTextField(
+              hint: "Cardholder Name",
+              textColor: textColor,
+              bgColor: fieldBgColor,
+              isDark: isDark,
             ),
             const SizedBox(height: 15),
 
             // Card Number Field
-            TextField(
-              style: TextStyle(color: textColor), // ✅ لون النص المدخل
+            _buildTextField(
+              hint: "0000 0000 0000 0000",
+              icon: Icons.credit_card,
+              textColor: textColor,
+              bgColor: fieldBgColor,
+              isDark: isDark,
+              iconColor: iconColor,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: "0000 0000 0000 0000",
-                hintStyle: TextStyle(
-                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
-                ),
-                prefixIcon: Icon(
-                  Icons.credit_card,
-                  color: iconColor,
-                ), // ✅ أيقونة متجاوبة
-                filled: true,
-                fillColor: fieldBgColor, // ✅ متجاوب
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: isDark
-                      ? BorderSide(color: Colors.grey.shade800)
-                      : BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: isDark
-                      ? BorderSide(color: Colors.grey.shade800)
-                      : BorderSide.none,
-                ),
-              ),
             ),
             const SizedBox(height: 15),
 
@@ -137,96 +220,105 @@ class AddPyment extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    style: TextStyle(color: textColor), // ✅ لون النص المدخل
+                  child: _buildTextField(
+                    hint: "MM/YY",
+                    icon: Icons.date_range,
+                    textColor: textColor,
+                    bgColor: fieldBgColor,
+                    isDark: isDark,
+                    iconColor: iconColor,
                     keyboardType: TextInputType.datetime,
-                    decoration: InputDecoration(
-                      hintText: "MM/YY",
-                      hintStyle: TextStyle(
-                        color: isDark
-                            ? Colors.grey.shade600
-                            : Colors.grey.shade500,
-                      ),
-                      prefixIcon: Icon(Icons.date_range, color: iconColor),
-                      filled: true,
-                      fillColor: fieldBgColor, // ✅ متجاوب
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: isDark
-                            ? BorderSide(color: Colors.grey.shade800)
-                            : BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: isDark
-                            ? BorderSide(color: Colors.grey.shade800)
-                            : BorderSide.none,
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: TextField(
-                    style: TextStyle(color: textColor), // ✅ لون النص المدخل
+                  child: _buildTextField(
+                    hint: "CVV",
+                    icon: Icons.lock_outline,
+                    textColor: textColor,
+                    bgColor: fieldBgColor,
+                    isDark: isDark,
+                    iconColor: iconColor,
                     keyboardType: TextInputType.number,
                     obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: "CVV", // الأفضل كتابة CVV بدلاً من 123 كـ Hint
-                      hintStyle: TextStyle(
-                        color: isDark
-                            ? Colors.grey.shade600
-                            : Colors.grey.shade500,
-                      ),
-                      prefixIcon: Icon(Icons.lock_outline, color: iconColor),
-                      filled: true,
-                      fillColor: fieldBgColor, // ✅ متجاوب
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: isDark
-                            ? BorderSide(color: Colors.grey.shade800)
-                            : BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: isDark
-                            ? BorderSide(color: Colors.grey.shade800)
-                            : BorderSide.none,
-                      ),
-                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-            // Save Button
+            // Confirm Button
             SizedBox(
               width: double.infinity,
+              height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xff2563EB),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  elevation: isDark ? 0 : 2, // تقليل الظل في الوضع المظلم
+                  elevation: isDark ? 0 : 2,
                 ),
-                onPressed: () {
-                  Navigator.pop(context); // إغلاق النافذة عند الحفظ
-                },
-                child: const Text(
-                  "Save Card",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
+                onPressed: isLoading ? null : _processBooking,
+                child: isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        "Confirm Payment & Book",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
               ),
             ),
-            const SizedBox(height: 10), // مسافة صغيرة من الأسفل للأمان
+            const SizedBox(height: 10),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String hint,
+    IconData? icon,
+    required Color textColor,
+    required Color bgColor,
+    required bool isDark,
+    Color? iconColor,
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+  }) {
+    return TextField(
+      style: TextStyle(color: textColor),
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
+        ),
+        prefixIcon: icon != null ? Icon(icon, color: iconColor) : null,
+        filled: true,
+        fillColor: bgColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: isDark
+              ? BorderSide(color: Colors.grey.shade800)
+              : BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: isDark
+              ? BorderSide(color: Colors.grey.shade800)
+              : BorderSide.none,
         ),
       ),
     );

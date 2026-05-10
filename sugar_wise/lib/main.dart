@@ -8,10 +8,16 @@ import 'package:sugar_wise/features/doctor/profile_doctor/doctor_profile/view_mo
 import 'package:sugar_wise/features/patient/laptests/lab_tests_view_model/lab_tests_view_model.dart';
 import 'package:sugar_wise/features/patient/monitoring_patient/view_model/monitoring_view_model.dart';
 import 'package:sugar_wise/features/patient/notfications_patient/notfication/view_model/notifications_view_model.dart';
+import 'package:sugar_wise/features/doctor/doctor_view_patient/view_models/doctors_view_modle.dart';
+import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/view_models/doctor_chats_view_model.dart';
+import 'package:sugar_wise/features/patient/chat_patient/patient_chats_to_doctor/view_models/patient_chats_view_model.dart';
 import 'package:sugar_wise/features/patient/orders/orders_view_model/orders_view_model.dart';
 import 'package:sugar_wise/features/patient/patient_profile/view_models/profile_view_model.dart';
 import 'package:sugar_wise/features/patient/seetings/settings_view_model.dart';
+import 'package:sugar_wise/features/patient/Shop/view_models/products_view_model.dart';
 import 'package:sugar_wise/features/splash/views/splash_screen.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
+import 'package:sugar_wise/core/app_keys.dart'; // ✅ Global NavigatorKey
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,8 +44,13 @@ void main() async {
           ChangeNotifierProvider(create: (_) => LabTestsViewModel()),
           ChangeNotifierProvider(create: (_) => OrdersViewModel()),
           ChangeNotifierProvider(create: (_) => NotificationsViewModel()),
+          ChangeNotifierProvider(create: (_) => DoctorsViewModel()), // 🔥 إضافة جلب الأطباء
           ChangeNotifierProvider(create: (_) => BluetoothScannerViewModel()),
           ChangeNotifierProvider(create: (_) => DoctorProfileViewModel()),
+          ChangeNotifierProvider(create: (_) => UserProvider()),
+          ChangeNotifierProvider(create: (_) => PatientChatsViewModel()),
+          ChangeNotifierProvider(create: (_) => DoctorChatsViewModel()),
+          ChangeNotifierProvider(create: (_) => ProductsViewModel()),
         ],
         child: MyApp(savedThemeMode: savedThemeMode),
       ),
@@ -71,6 +82,8 @@ class MyApp extends StatelessWidget {
       ),
       initial: savedThemeMode ?? AdaptiveThemeMode.light,
       builder: (theme, darkTheme) => MaterialApp(
+        // ✅ إضافة navigatorKey ليستطيع Zego من عرض شاشة الرنين فوق أي صفحة
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'Sugar Wise',
         theme: theme,

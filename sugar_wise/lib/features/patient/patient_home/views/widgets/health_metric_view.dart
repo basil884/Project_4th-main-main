@@ -84,6 +84,7 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
         ),
         actions: [
           Container(
+            margin: EdgeInsets.only(left: 10, right: 10),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [
@@ -633,8 +634,9 @@ class _DietarySystemsViewState extends State<DietarySystemsView> {
                                   if (nameCtrl.text.isEmpty ||
                                       calCtrl.text.isEmpty ||
                                       carbsCtrl.text.isEmpty ||
-                                      insulinCtrl.text.isEmpty)
+                                      insulinCtrl.text.isEmpty) {
                                     return;
+                                  }
 
                                   int calories =
                                       int.tryParse(calCtrl.text) ?? 0;

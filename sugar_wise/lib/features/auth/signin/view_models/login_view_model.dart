@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-// استيراد الـ ApiClient الخاص بك هنا
+import 'package:sugar_wise/core/api/api_client.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 
 class LoginViewModel extends ChangeNotifier {
   bool _isLoading = false;
@@ -11,6 +12,20 @@ class LoginViewModel extends ChangeNotifier {
   bool _isPasswordVisible = false;
   bool get isPasswordVisible => _isPasswordVisible;
 
+  // ✅ حماية من استخدام الـ ViewModel بعد تدميره
+  bool _isDisposed = false;
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_isDisposed) super.notifyListeners();
+  }
+
   // تغيير رؤية كلمة المرور
   void togglePasswordVisibility() {
     _isPasswordVisible = !_isPasswordVisible;
@@ -18,7 +33,7 @@ class LoginViewModel extends ChangeNotifier {
   }
 
   // دالة تسجيل الدخول
-  Future<String?> login(String email, String password) async {
+  Future<String?> login(String email, String password, UserProvider userProvider) async {
     if (email.isEmpty || password.isEmpty) {
       _errorMessage = "Please enter both email and password.";
       notifyListeners();
@@ -30,49 +45,39 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 🔥 1. كود التجربة الوهمي (Mock Testing)
-      // محاكاة وقت التحميل من السيرفر
-      await Future.delayed(const Duration(seconds: 2));
+      final response = await ApiClient.postData(
+        endpoint: 'users/login',
+        data: {
+          "email": email.trim().toLowerCase(),
+          "password": password,
+        },
+      );
 
-      // تجربة حساب المريض
-      if (email == 'patient@test.com' && password == '123456') {
+      if (response.statusCode == 200 && response.data['success']) {
+        final userData = response.data['data']['user'];
+        final String token = response.data['data']['token'];
+        final String role = userData['role'].toString().toLowerCase();
+        
+        // حفظ البيانات في الـ Provider
+        userProvider.setUser(userData, token: token);
+
         _isLoading = false;
         notifyListeners();
-        return 'patient'; // سيرجع نوع الحساب مريض
+        
+        // إعادة الـ role لتوجيه المستخدم
+        if (role == 'doctor') return 'doctor';
+        if (role == 'patient') return 'patient';
+        return role;
+      } else {
+        _errorMessage = response.data['message'] ?? "Invalid email or password.";
       }
-
-      // تجربة حساب الدكتور
-      if (email == 'doctor@test.com' && password == '123456') {
-        _isLoading = false;
-        notifyListeners();
-        return 'doctor'; // سيرجع نوع الحساب دكتور
-      }
-
-      // 🔥 2. (في المستقبل) هذا هو كود السيرفر الحقيقي الذي سيعمل لاحقاً
-      /*
-    final payload = {"email": email, "password": password};
-    final response = await ApiClient.postData(endpoint: 'auth/login', data: payload);
-
-    if (response.statusCode == 200) {
-      String userRole = response.data['role']; 
-      _isLoading = false;
-      notifyListeners();
-      return userRole;
-    }
-    */
-
-      // إذا تم إدخال إيميل أو باسوورد غير مسجلين في التجربة
-      _isLoading = false;
-      _errorMessage =
-          "Invalid email or password. Try patient@test.com or doctor@test.com";
-      notifyListeners();
-      return null;
     } catch (e) {
+      _errorMessage = "Connection error. Make sure the server is running.";
+    } finally {
       _isLoading = false;
-      _errorMessage = "An unexpected error occurred.";
-      notifyListeners();
-      return null;
+      notifyListeners(); // ✅ آمن الآن — لن يُنفَّذ إذا كان الـ ViewModel مُدمَّراً
     }
+    return null;
   }
 
   void clearError() {
@@ -110,7 +115,7 @@ class LoginViewModel extends ChangeNotifier {
       if (response.statusCode == 200) {
         // هنا سيقوم الباك إيند بإرسال الـ Token
         String token = response.data['token'];
-        print("✅ Login Success! Token: $token");
+        debugPrint("✅ Login Success! Token: $token");
 
         // TODO: حفظ التوكن في Secure Storage
 

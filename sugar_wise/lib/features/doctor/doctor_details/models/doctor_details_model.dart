@@ -1,6 +1,8 @@
+import '../../doctor_view_patient/model/doctor_model.dart';
 import 'clinic_model.dart'; // ✅ استدعاء موديل العيادة
 
 class DoctorDetailsModel {
+  final String id; // ✅ إضافة المعرف
   final String name;
   final String specialty;
   final String jobTitle;
@@ -12,9 +14,11 @@ class DoctorDetailsModel {
   final int experienceYears;
   final String patientsCount;
   final String biography;
-  final List<ClinicModel> clinics; // ✅ أضفنا قائمة العيادات هنا
+  final List<ClinicModel> clinics;
+  final List<ReviewModel> reviews;
 
   DoctorDetailsModel({
+    required this.id, // ✅ مطلوب
     required this.name,
     required this.specialty,
     required this.jobTitle,
@@ -26,6 +30,7 @@ class DoctorDetailsModel {
     required this.experienceYears,
     required this.patientsCount,
     required this.biography,
-    required this.clinics, // ✅ طلبناها هنا
-  });
+    required this.clinics,
+    List<ReviewModel>? reviews,
+  }) : reviews = reviews ?? [];
 }

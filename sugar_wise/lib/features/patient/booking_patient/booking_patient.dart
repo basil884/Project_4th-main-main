@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sugar_wise/features/doctor/doctor_view_patient/model/doctor_model.dart';
 import 'package:sugar_wise/features/doctor/doctor_view_patient/view_models/doctors_view_modle.dart';
 import 'package:sugar_wise/features/patient/review/review_screen.dart';
@@ -18,6 +19,9 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الاستماع للـ Provider حتى يتم تحديث الشاشة فور إزالة أي حجز
+    Provider.of<DoctorsViewModel>(context);
+
     // 🔥 استخراج حالة الثيم الحالي
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -60,9 +64,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     doctor: doctor,
                     isPast: !isUpcoming,
                     onCancel: () {
-                      setState(() {
-                        globalDoctorsList.remove(doctor);
-                      });
+                      Provider.of<DoctorsViewModel>(
+                        context,
+                        listen: false,
+                      ).cancelBookedDoctor(doctor);
                     },
                   );
                 },
@@ -161,7 +166,6 @@ class BookingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // 🔥 استخراج حالة الثيم لضبط ألوان الكارد
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const greenColor = Color(0xFF5B7F5B);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -188,7 +192,7 @@ class BookingCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${("Order ID")}: ${doctor.id}',
+                '${("Order ID")}: #ORD-${doctor.id.hashCode.abs().toString().padLeft(6, '0').substring(0, 6)}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -353,6 +357,7 @@ class BookingCard extends StatelessWidget {
                     onPressed: () {
                       if (!isPast) {
                         final selectedDoctor = DoctorDetailsModel(
+                          id: doctor.id,
                           name: doctor.name,
                           specialty: doctor.specialty,
                           jobTitle: doctor.workplace.isEmpty
@@ -399,6 +404,14 @@ class BookingCard extends StatelessWidget {
                                 "06:00 PM",
                               ],
                               clinics: [],
+                            ),
+                          ],
+                          reviews: [
+                            ReviewModel(
+                              patientName: "Dr. Basil Ashraf",
+                              comment: "Great experience, very satisfied.",
+                              rating: 5.0,
+                              date: "Just now",
                             ),
                           ],
                         );

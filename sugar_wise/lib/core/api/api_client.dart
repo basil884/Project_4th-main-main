@@ -9,10 +9,14 @@ class ApiClient {
     _dio = Dio(
       BaseOptions(
         baseUrl:
-            'https://your-nodejs-server.com/api/', // 🔥 الرابط الأساسي للسيرفر
+            'http://192.168.1.7:5000/api/', // 🔥 الرابط الخاص بجهازك (للموبايل الحقيقي)
         receiveDataWhenStatusError: true,
-        connectTimeout: const Duration(seconds: 15), // أقصى مدة للاتصال
-        receiveTimeout: const Duration(seconds: 15), // أقصى مدة لاستلام الرد
+        connectTimeout: const Duration(
+          seconds: 30,
+        ), // زيادة مدة الاتصال لـ 30 ثانية
+        receiveTimeout: const Duration(
+          seconds: 30,
+        ), // زيادة مدة الاستلام لـ 30 ثانية
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -60,5 +64,29 @@ class ApiClient {
       _dio.options.headers['Authorization'] = 'Bearer $token';
     }
     return await _dio.get(endpoint, queryParameters: queryParameters);
+  }
+
+  // دالة موحدة لإرسال طلبات الـ PUT
+  static Future<Response> putData({
+    required String endpoint,
+    required dynamic data,
+    String? token,
+  }) async {
+    if (token != null) {
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+    }
+    return await _dio.put(endpoint, data: data);
+  }
+
+  // دالة موحدة لإرسال طلبات الـ DELETE
+  static Future<Response> deleteData({
+    required String endpoint,
+    Map<String, dynamic>? data,
+    String? token,
+  }) async {
+    if (token != null) {
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+    }
+    return await _dio.delete(endpoint, data: data);
   }
 }

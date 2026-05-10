@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 import '../view_models/profile_view_model.dart';
 import 'widget/profile_header.dart';
 import 'widget/info_card.dart';
@@ -9,8 +10,17 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<ProfileViewModel>(context);
-    final patient = viewModel.patientData;
+    final userProvider = Provider.of<UserProvider>(context);
+    final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
+
+    // تحديث الـ ViewModel ببيانات الباك إيند الحقيقية إذا كانت متوفرة
+    if (userProvider.isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        viewModel.updateFromBackend(userProvider.userData!);
+      });
+    }
+
+    final patient = Provider.of<ProfileViewModel>(context).patientData;
 
     // 🔥 استخراج حالة الثيم والألوان الأساسية
     final isDark = Theme.of(context).brightness == Brightness.dark;

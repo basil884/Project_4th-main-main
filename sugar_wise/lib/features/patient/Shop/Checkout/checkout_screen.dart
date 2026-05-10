@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:sugar_wise/features/patient/Shop/Checkout/Stripe1.dart';
 import 'package:sugar_wise/features/patient/Shop/Checkout/Stripe2.dart';
 import 'package:sugar_wise/features/patient/Shop/Checkout/Stripe3.dart';
@@ -9,25 +10,34 @@ import 'package:sugar_wise/features/patient/shop/model.dart';
 // import 'package:untitled/prject2/payment_success.dart';
 
 class Checkout extends StatefulWidget {
+  const Checkout({super.key});
+
   @override
-  _CheckoutScreenState createState() => _CheckoutScreenState();
+  State<Checkout> createState() => _CheckoutState();
 }
 
-class _CheckoutScreenState extends State<Checkout> {
+class _CheckoutState extends State<Checkout> {
   int _selectedMethod = 0;
 
-  final List<FieldModel> field1 = [
-    FieldModel(text: "Stripe", index: 0, icon: Icons.credit_card),
-    FieldModel(text: "Wallet", index: 1, icon: Icons.account_balance_wallet),
-    FieldModel(text: "Cash", index: 2, icon: Icons.local_shipping),
+  List<FieldModel> getField1() => [
+    FieldModel(text: "stripe".tr(), index: 0, icon: Icons.credit_card),
+    FieldModel(
+      text: "wallet".tr(),
+      index: 1,
+      icon: Icons.account_balance_wallet,
+    ),
+    FieldModel(text: "cash".tr(), index: 2, icon: Icons.local_shipping),
   ];
 
-  final List<InputFieldModel> fields = [
-    InputFieldModel(hint: "First Name", icon: Icons.person_outline),
-    InputFieldModel(hint: "Last Name", icon: Icons.person_outline),
-    InputFieldModel(hint: "Telephone Number", icon: Icons.phone_android),
-    InputFieldModel(hint: "Second Telephone", icon: Icons.send),
-    InputFieldModel(hint: "Shipping Address", icon: Icons.location_on_outlined),
+  List<InputFieldModel> getFields() => [
+    InputFieldModel(hint: "first_name_hint".tr(), icon: Icons.person_outline),
+    InputFieldModel(hint: "last_name_hint".tr(), icon: Icons.person_outline),
+    InputFieldModel(hint: "phone_number_hint".tr(), icon: Icons.phone_android),
+    InputFieldModel(hint: "second_phone_hint".tr(), icon: Icons.send),
+    InputFieldModel(
+      hint: "address_hint".tr(),
+      icon: Icons.location_on_outlined,
+    ),
   ];
 
   // ================= Stripe Flow =================
@@ -70,9 +80,9 @@ class _CheckoutScreenState extends State<Checkout> {
       builder: (context) => Stripe3(
         onVerify: () {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Card Verified Successfully!")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("card_verified_msg".tr())));
         },
       ),
     );
@@ -88,7 +98,7 @@ class _CheckoutScreenState extends State<Checkout> {
           Navigator.pop(context);
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text("Payment Successful!")));
+          ).showSnackBar(SnackBar(content: Text("payment_success_msg".tr())));
         },
       ),
     );
@@ -101,14 +111,7 @@ class _CheckoutScreenState extends State<Checkout> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset("assets/images/logo/logoIcon.png", height: 30),
-            const SizedBox(width: 8),
-            Image.asset("assets/images/logo/logoText.png", height: 30),
-          ],
-        ),
+
         actions: const [
           Icon(Icons.menu, color: Colors.black),
           SizedBox(width: 10),
@@ -125,9 +128,12 @@ class _CheckoutScreenState extends State<Checkout> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Select Payment Method",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  Text(
+                    "select_payment_method".tr(),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 15),
                   _buildPaymentMethodSelector(),
@@ -144,7 +150,9 @@ class _CheckoutScreenState extends State<Checkout> {
             const SizedBox(height: 24),
             // الزر الآن تحت الـ Order Summary
             _actionButton(
-              _selectedMethod == 2 ? "Confirm Order" : "Pay \$45.00",
+              _selectedMethod == 2
+                  ? "confirm_order_btn".tr()
+                  : "pay_amount_btn".tr(args: ["45.00"]),
               () {
                 if (_selectedMethod == 0) {
                   _startStripeFlow();
@@ -157,9 +165,7 @@ class _CheckoutScreenState extends State<Checkout> {
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Processing Wallet Payment..."),
-                    ),
+                    SnackBar(content: Text("processing_wallet_msg".tr())),
                   );
                 }
               },
@@ -173,30 +179,30 @@ class _CheckoutScreenState extends State<Checkout> {
 
   Widget _buildPaymentArea() {
     if (_selectedMethod == 0) {
-      return const Text(
-        "Secure payment with Stripe credit card.",
-        style: TextStyle(fontSize: 13, color: Colors.grey),
+      return Text(
+        "secure_stripe_msg".tr(),
+        style: const TextStyle(fontSize: 13, color: Colors.grey),
       );
     } else if (_selectedMethod == 1) {
       return _buildTextField(
         Icons.account_balance_wallet,
-        "Enter your e-wallet number",
+        "wallet_number_hint".tr(),
       );
     } else {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
+          color: Colors.green.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.info_outline, color: Colors.green, size: 20),
-            SizedBox(width: 10),
+            const Icon(Icons.info_outline, color: Colors.green, size: 20),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
-                "Cash on Delivery: You will pay when you receive your package.",
-                style: TextStyle(color: Colors.green, fontSize: 13),
+                "cash_delivery_desc".tr(),
+                style: const TextStyle(color: Colors.green, fontSize: 13),
               ),
             ),
           ],
@@ -207,7 +213,7 @@ class _CheckoutScreenState extends State<Checkout> {
 
   Widget _buildPaymentMethodSelector() {
     return Row(
-      children: field1.map((m) {
+      children: getField1().map((m) {
         bool isSelected = _selectedMethod == m.index;
         return Expanded(
           child: GestureDetector(
@@ -217,7 +223,7 @@ class _CheckoutScreenState extends State<Checkout> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.purple.withOpacity(0.1)
+                    ? Colors.purple.withValues(alpha: 0.1)
                     : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
@@ -246,7 +252,7 @@ class _CheckoutScreenState extends State<Checkout> {
 
   Widget _buildFormFields() {
     return Column(
-      children: fields.map((field) {
+      children: getFields().map((field) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: _buildTextField(field.icon, field.hint),
@@ -280,7 +286,7 @@ class _CheckoutScreenState extends State<Checkout> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.blueAccent.withOpacity(0.3),
+              color: Colors.blueAccent.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -345,7 +351,7 @@ class _CheckoutScreenState extends State<Checkout> {
       borderRadius: BorderRadius.circular(12),
       boxShadow: [
         BoxShadow(
-          color: Colors.grey.withOpacity(0.2),
+          color: Colors.grey.withValues(alpha: 0.2),
           blurRadius: 5,
           offset: const Offset(0, 3),
         ),
@@ -371,7 +377,7 @@ class _CheckoutScreenState extends State<Checkout> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
-                  "assets/images/shop/product1.png",
+                  "assets/images/Shop/product1.png",
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,

@@ -28,9 +28,7 @@ class AppearanceScreen extends StatelessWidget {
         title: "Privacy & Security",
         assetImage: "assets/images/apperance/Iconc.png",
         iconColor: Colors.teal,
-        onTap: () {
-          // print("Privacy Tapped");
-        },
+        onTap: () {},
       ),
     ];
 

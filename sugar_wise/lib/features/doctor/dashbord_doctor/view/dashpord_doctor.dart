@@ -3,14 +3,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/chat_patient/chat_bot/view/bot_chat_sheet_view.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/doctor_home.dart';
 import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/all_patients_view.dart';
 import 'package:sugar_wise/features/doctor/add_clinic/view/my_clinics_view.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/doctor_drawer.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/doctor_drawer_side_bar.dart';
 import 'package:sugar_wise/features/doctor/notfications_doctor/view/view.dart';
 import 'package:sugar_wise/features/doctor/orders/view/orders_view.dart';
 import 'package:sugar_wise/features/doctor/profile_doctor/doctor_profile/view/doctor_profile_view.dart';
 import 'package:sugar_wise/features/doctor/booked_clinics/view/booked_clinics.dart';
+import 'package:provider/provider.dart';
+import 'package:sugar_wise/features/doctor/profile_doctor/doctor_profile/view_model/doctor_profile_view_model.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/ViewModel/home_view_model.dart';
 
 class DashpordDoctor extends StatelessWidget {
   const DashpordDoctor({super.key});
@@ -18,6 +20,11 @@ class DashpordDoctor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final doctorProfileVM = Provider.of<DoctorProfileViewModel>(context);
+    final homeVM = Provider.of<HomeViewModel>(context);
+
+    // استخدام الاسم من الـ ViewModel لأنه معالج ومحمي من الـ null
+    final doctorName = "Dr. ${doctorProfileVM.doctorName}";
 
     return Scaffold(
       appBar: AppBar(
@@ -39,7 +46,7 @@ class DashpordDoctor extends StatelessWidget {
             : AppColors.lightTextPrimary,
         elevation: 0,
       ),
-      drawer: CustomDoctorDrawer(currentPage: 'Dashboard'),
+      drawer: CustomDoctorSideBar(currentPage: 'Dashboard'),
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
@@ -94,7 +101,7 @@ class DashpordDoctor extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "welcome_doctor".tr(),
+                            doctorName,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -187,8 +194,16 @@ class DashpordDoctor extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => AllPatientsView(
-                                patients: DoctorHomeContent.mockPatients,
+                              builder: (_) => MultiProvider(
+                                providers: [
+                                  ChangeNotifierProvider.value(value: homeVM),
+                                  ChangeNotifierProvider.value(
+                                    value: doctorProfileVM,
+                                  ),
+                                ],
+                                child: AllPatientsView(
+                                  patients: homeVM.patients,
+                                ),
                               ),
                             ),
                           );
@@ -217,7 +232,15 @@ class DashpordDoctor extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const BookedClinics(),
+                              builder: (_) => MultiProvider(
+                                providers: [
+                                  ChangeNotifierProvider.value(value: homeVM),
+                                  ChangeNotifierProvider.value(
+                                    value: doctorProfileVM,
+                                  ),
+                                ],
+                                child: const BookedClinics(),
+                              ),
                             ),
                           );
                         } else if (item['title'] == 'card_doctor_profile') {

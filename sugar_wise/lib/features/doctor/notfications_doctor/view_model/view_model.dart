@@ -16,6 +16,7 @@ class NotificationsViewModel extends ChangeNotifier {
       icon: Icons.calendar_today_outlined,
       iconColor: const Color(0xFF2F66D0),
       bgColor: const Color(0xFFE8F0FE),
+      senderName: "Clinic Desk",
       isRead: false, // 🔴 غير مقروء
     ),
     NotificationModel(
@@ -26,6 +27,7 @@ class NotificationsViewModel extends ChangeNotifier {
       icon: Icons.error_outline,
       iconColor: Colors.redAccent,
       bgColor: Colors.red.withValues(alpha: 0.1),
+      senderName: "Lab System",
       isRead: false, // 🔴 غير مقروء
     ),
     NotificationModel(
@@ -36,6 +38,7 @@ class NotificationsViewModel extends ChangeNotifier {
       icon: Icons.person_add_alt_1_outlined,
       iconColor: const Color(0xFF9333EA),
       bgColor: const Color(0xFF9333EA).withValues(alpha: 0.1),
+      senderName: "Admin",
       isRead: true, // ✅ مقروء
     ),
     NotificationModel(
@@ -46,6 +49,7 @@ class NotificationsViewModel extends ChangeNotifier {
       icon: Icons.notifications_none_outlined,
       iconColor: const Color(0xFF667085),
       bgColor: const Color(0xFFF1F4F9),
+      senderName: "Support",
       isRead: true, // ✅ مقروء
     ),
     NotificationModel(
@@ -56,6 +60,7 @@ class NotificationsViewModel extends ChangeNotifier {
       icon: Icons.description_outlined,
       iconColor: const Color(0xFF10B981),
       bgColor: const Color(0xFFE6F4EA),
+      senderName: "Analytics",
       isRead: true, // ✅ مقروء
     ),
   ];
@@ -91,6 +96,12 @@ class NotificationsViewModel extends ChangeNotifier {
       _notifications[index].isRead = true;
       notifyListeners();
     }
+  }
+
+  // 6. حذف الإشعار (محلي للبيانات الوهمية)
+  void deleteNotification(String id) {
+    _notifications.removeWhere((n) => n.id == id);
+    notifyListeners();
   }
 
   // 7. إضافة إشعار جديد

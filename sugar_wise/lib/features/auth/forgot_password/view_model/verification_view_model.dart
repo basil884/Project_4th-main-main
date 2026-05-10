@@ -56,10 +56,6 @@ class VerificationViewModel extends ChangeNotifier {
       // 🔥 1. تجهيز الـ JSON للـ Node.js
       final payload = {"email": email, "otp": code};
 
-      // print("🚀====== NODE.JS PAYLOAD (STEP 2: VERIFY OTP) ======🚀");
-      // print(jsonEncode(payload));
-      // print("🚀====================================================🚀");
-
       final response = await ApiClient.postData(
         endpoint: 'auth/verify-otp',
         data: payload,

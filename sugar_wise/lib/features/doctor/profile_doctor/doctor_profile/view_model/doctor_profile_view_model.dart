@@ -89,13 +89,15 @@ class DoctorProfileViewModel extends ChangeNotifier {
 
   // 2. بيانات الطبيب (Mock Data) - سيتم جلبها من الـ API لاحقاً
   String doctorName = "Dr. Basil Ashraf";
-  String specialty = "Cardiology";
+  String specialty = "Cardiologist";
   double rating = 4.8;
   int reviewsCount = 124;
   String patientsCount = "1,500+";
-  String experienceYears = "12 Years";
+  String experienceYears = "10 Years";
+  String doctorImage = ""; // أضفت هذا السطر
+  String university = "Cairo University";
   String aboutText =
-      "Dr. Basil Ashraf is a dedicated cardiologist with over 12 years of experience...";
+      "Dr. Basil Ashraf is a dedicated medical professional.";
   String? profileImagePath; // متغير جديد لحفظ مسار الصورة الجديدة
 
   final List<String> specializations = [
@@ -107,7 +109,7 @@ class DoctorProfileViewModel extends ChangeNotifier {
     required String newName,
     required String newSpecialty,
     required String newBio,
-    String? newImagePath, // مسار الصورة اختياري
+    String? newImagePath,
   }) {
     doctorName = newName;
     specialty = newSpecialty;
@@ -115,6 +117,47 @@ class DoctorProfileViewModel extends ChangeNotifier {
     if (newImagePath != null) {
       profileImagePath = newImagePath;
     }
-    notifyListeners(); // هذا السطر هو السحر الذي يحدث الشاشة فوراً!
+    notifyListeners();
+  }
+
+  // 🚀 دالة جديدة لمزامنة البيانات مع الـ UserProvider (البيانات الحقيقية)
+  void syncWithUserProvider(Map<String, dynamic>? userData) {
+    if (userData == null) return;
+
+    // السيرفر قد يرجع البيانات في الحقل الرئيسي أو داخل كائن 'doctor' بعد الـ Populate
+    final doctorData = userData['doctor'] is Map<String, dynamic> ? userData['doctor'] : userData;
+
+    // محاولة الحصول على الاسم من أكثر من مصدر
+    final fName = doctorData['firstName'] ?? userData['firstName'] ?? userData['name']?.split(' ')?.first ?? 'Doctor';
+    final lName = doctorData['lastName'] ?? userData['lastName'] ?? userData['name']?.split(' ')?.skip(1)?.join(' ') ?? '';
+    doctorName = "$fName $lName".trim();
+    specialty = doctorData['medicalSpecialty'] ?? doctorData['specialty'] ?? "General Doctor";
+    experienceYears = "${doctorData['experienceYears'] ?? doctorData['experience'] ?? 0} Years";
+    
+    // منطق تنظيف صورة الطبيب بشكل آمن
+    final rawImgSource = doctorData['profileImage'] ?? doctorData['Image'] ?? userData['profileImage'] ?? "";
+    final String rawImg = rawImgSource.toString();
+
+    if (rawImg.isEmpty || rawImg.toLowerCase().contains("default") || rawImg.contains("..")) {
+      doctorImage = "https://ui-avatars.com/api/?name=${Uri.encodeComponent(doctorName)}&background=random&size=150";
+    } else if (rawImg.startsWith('http') || rawImg.contains('base64') || rawImg.startsWith('data:image')) {
+      doctorImage = rawImg;
+    } else {
+      String cleanPath = rawImg.startsWith('/') ? rawImg.substring(1) : rawImg;
+      if (cleanPath.startsWith('uploads/')) {
+        cleanPath = cleanPath.replaceFirst('uploads/', '');
+      }
+      doctorImage = "http://192.168.1.7:5000/uploads/$cleanPath";
+    }
+
+    university = doctorData['university'] ?? "Cairo University";
+    aboutText = doctorData['bio'] ?? "Dedicated medical professional graduated from $university. Specializing in $specialty with extensive experience in clinical practice.";
+    
+    // تحديث التخصصات لتشمل التخصص الرئيسي
+    specializations.clear();
+    specializations.add(specialty);
+    if (doctorData['subSpecialty'] != null) specializations.add(doctorData['subSpecialty']);
+
+    notifyListeners();
   }
 }

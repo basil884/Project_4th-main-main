@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class Stripe4 extends StatelessWidget {
   final VoidCallback onUpdate;
@@ -8,7 +9,7 @@ class Stripe4 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.05),
+      color: Colors.black.withValues(alpha: 0.05),
       child: Center(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -32,9 +33,9 @@ class Stripe4 extends StatelessWidget {
                       onPressed: () {},
                       icon: const Icon(Icons.arrow_back, size: 20),
                     ),
-                    const Text(
-                      "Confirm CVC",
-                      style: TextStyle(
+                    Text(
+                      "confirm_cvc".tr(),
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1D2939),
@@ -77,19 +78,19 @@ class Stripe4 extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Card **** 5545",
-                                style: TextStyle(
+                                "card_desc".tr(args: ["5545"]),
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                 ),
                               ),
                               Text(
-                                "Expires 12/26",
-                                style: TextStyle(
+                                "exp_date".tr(args: ["12/26"]),
+                                style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 12,
                                 ),
@@ -101,9 +102,9 @@ class Stripe4 extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
 
-                    const Text(
-                      "CVC",
-                      style: TextStyle(
+                    Text(
+                      "cvc_label".tr(),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF344054),
                       ),
@@ -139,9 +140,9 @@ class Stripe4 extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      "CVC is required",
-                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    Text(
+                      "cvc_required".tr(),
+                      style: const TextStyle(color: Colors.red, fontSize: 13),
                     ),
 
                     const SizedBox(height: 20),
@@ -152,19 +153,19 @@ class Stripe4 extends StatelessWidget {
                         color: const Color(0xFFFFF7ED),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Row(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.lock_outline,
                             color: Color(0xFFC2410C),
                             size: 20,
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              "Your security is important to us. We need to verify your card's security code to process this transaction.",
-                              style: TextStyle(
+                              "security_importance_msg".tr(),
+                              style: const TextStyle(
                                 color: Color(0xFF9A3412),
                                 fontSize: 13,
                                 height: 1.4,
@@ -189,9 +190,9 @@ class Stripe4 extends StatelessWidget {
                           ),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          "Update",
-                          style: TextStyle(
+                        child: Text(
+                          "update_btn".tr(),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -201,10 +202,13 @@ class Stripe4 extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 15),
-                    const Center(
+                    Center(
                       child: Text(
-                        "Encrypted payment processing",
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                        "encrypted_processing_msg".tr(),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],

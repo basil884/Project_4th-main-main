@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +8,7 @@ import 'package:sugar_wise/features/doctor/doctor_home/ViewModel/home_view_model
 import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/all_patients_view.dart';
 import 'package:sugar_wise/features/doctor/notfications_doctor/view/view.dart';
 import 'package:sugar_wise/features/doctor/profile_doctor/doctor_profile/view_model/doctor_profile_view_model.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/doctor_drawer.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/doctor_drawer_side_bar.dart';
 
 // 🚨 تأكد من مسارات هذه الملفات في مشروعك
 import 'package:sugar_wise/features/patient/patient_profile/models/patient_profile_model.dart';
@@ -37,7 +38,7 @@ class _DoctorHomeBody extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      drawer: CustomDoctorDrawer(),
+      drawer: CustomDoctorSideBar(),
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.scaffoldBackground,
@@ -114,6 +115,7 @@ class DoctorHomeContent extends StatelessWidget {
     PatientProfileModel(
       name: "Samir Mahmoud",
       patientId: "SW-101",
+      dbId: "mock_id_101",
       age: "55 Years",
       gender: "Male",
       bloodType: "O+",
@@ -131,6 +133,7 @@ class DoctorHomeContent extends StatelessWidget {
     PatientProfileModel(
       name: "Ezz Ahmed",
       patientId: "SW-102",
+      dbId: "mock_id_102",
       age: "60 Years",
       gender: "Male",
       bloodType: "B+",
@@ -148,6 +151,7 @@ class DoctorHomeContent extends StatelessWidget {
     PatientProfileModel(
       name: "Mona Ali",
       patientId: "SW-103",
+      dbId: "mock_id_103",
       age: "42 Years",
       gender: "Female",
       bloodType: "A-",
@@ -165,6 +169,7 @@ class DoctorHomeContent extends StatelessWidget {
     PatientProfileModel(
       name: "Omar Khalid",
       patientId: "SW-104",
+      dbId: "mock_id_104",
       age: "45 Years",
       gender: "Male",
       bloodType: "AB+",
@@ -182,6 +187,7 @@ class DoctorHomeContent extends StatelessWidget {
     PatientProfileModel(
       name: "Safa Noor",
       patientId: "SW-105",
+      dbId: "mock_id_105",
       age: "35 Years",
       gender: "Female",
       bloodType: "O-",
@@ -200,6 +206,7 @@ class DoctorHomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final homeViewModel = Provider.of<HomeViewModel>(context);
     final profileViewModel = Provider.of<DoctorProfileViewModel>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textMain;
@@ -207,276 +214,249 @@ class DoctorHomeContent extends StatelessWidget {
         ? AppColors.darkTextSecondary
         : AppColors.textLight;
 
+    // الحصول على قائمة المرضى الحقيقيين
+    final realPatients = homeViewModel.patients;
+
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            // 1. Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Builder(
-                  builder: (context) => GestureDetector(
-                    onTap: () => Scaffold.of(context).openDrawer(),
-                    child: Icon(Icons.menu, size: 30, color: textPrimary),
-                  ),
-                ),
-                Column(
+      child: homeViewModel.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: () => homeViewModel.fetchPatients(),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 20),
+                    // 1. Header
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Builder(
+                          builder: (context) => GestureDetector(
+                            onTap: () => Scaffold.of(context).openDrawer(),
+                            child: Icon(
+                              Icons.menu,
+                              size: 30,
+                              color: textPrimary,
+                            ),
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  "greet_doctor".tr(
+                                    args: [profileViewModel.doctorName],
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: textPrimary,
+                                  ),
+                                ),
+                                const Text(
+                                  "👋",
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              "check_updates".tr(),
+                              style: TextStyle(
+                                color: textSecondary,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationsView(),
+                            ),
+                          ),
+                          child: Stack(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryBlue.withValues(
+                                    alpha: 0.15,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.notifications_outlined,
+                                  color: AppColors.primaryBlue,
+                                  size: 28,
+                                ),
+                              ),
+                              Positioned(
+                                right: 12,
+                                top: 12,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isDark
+                                          ? AppColors.darkSurface
+                                          : Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 25),
+
+                    // 2. Search Bar
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkSurface : Colors.white,
+                        borderRadius: BorderRadius.circular(30),
+                        border: isDark
+                            ? Border.all(color: AppColors.darkBorder)
+                            : null,
+                        boxShadow: [
+                          if (!isDark)
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                        ],
+                      ),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: "search_hint".tr(),
+                          hintStyle: TextStyle(
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : Colors.grey,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: AppColors.primaryBlue,
+                          ),
+                          suffixIcon: const Icon(
+                            Icons.mic,
+                            color: AppColors.primaryBlue,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+
+                    // 4. Critical Patients Section
+                    if (realPatients.isNotEmpty) ...[
+                      _buildSectionTitle(
+                        "critical_patients".tr(),
+                        "see_all".tr(),
+                        isDark,
+                        onActionTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AllPatientsView(patients: realPatients),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 15),
+                      SizedBox(
+                        height: 200,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: realPatients.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 15),
+                          itemBuilder: (context, index) {
+                            final p = realPatients[index];
+                            return _buildCriticalPatientCard(
+                              context,
+                              p,
+                              p.primaryCondition,
+                              "status_review".tr(),
+                              AppColors.primaryBlue,
+                              "4.5",
+                              isDark,
+                            );
+                          },
+                        ),
+                      ),
+                    ] else
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Text(
+                            "No patients found in database.",
+                            style: TextStyle(color: textSecondary),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 25),
+
+                    // 5. Nearby Patients Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "greet_doctor".tr(
-                            args: [profileViewModel.doctorName],
-                          ),
+                          "nearby_patients".tr(),
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: textPrimary,
                           ),
                         ),
-                        const Text("👋", style: TextStyle(fontSize: 20)),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_outlined,
+                              color: textSecondary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "hospital_name".tr(),
+                              style: TextStyle(
+                                color: textSecondary,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    Text(
-                      "check_updates".tr(),
-                      style: TextStyle(color: textSecondary, fontSize: 14),
+                    const SizedBox(height: 15),
+                    Column(
+                      children: realPatients.take(5).map((p) {
+                        return _buildNearbyPatientTile(
+                          p.name,
+                          p.primaryCondition,
+                          p.age,
+                          p.imageUrl,
+                          isDark,
+                        );
+                      }).toList(),
                     ),
+                    const SizedBox(height: 20),
                   ],
                 ),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationsView(),
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryBlue.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.notifications_outlined,
-                          color: AppColors.primaryBlue,
-                          size: 28,
-                        ),
-                      ),
-                      Positioned(
-                        right: 12,
-                        top: 12,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isDark
-                                  ? AppColors.darkSurface
-                                  : Colors.white,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 25),
-
-            // 2. Search Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                boxShadow: [
-                  if (!isDark)
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                ],
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "search_hint".tr(),
-                  hintStyle: TextStyle(
-                    color: isDark ? AppColors.darkTextSecondary : Colors.grey,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: AppColors.primaryBlue,
-                  ),
-                  suffixIcon: const Icon(
-                    Icons.mic,
-                    color: AppColors.primaryBlue,
-                  ),
-                  border: InputBorder.none,
-                ),
               ),
             ),
-            const SizedBox(height: 25),
-
-            // 4. Critical Patients Section
-            _buildSectionTitle(
-              "critical_patients".tr(),
-              "see_all".tr(),
-              isDark,
-              onActionTap: () {
-                // 🚀 التوجيه للشاشة الجديدة وتمرير كل المرضى لها
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        AllPatientsView(patients: mockPatients),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 15),
-            SizedBox(
-              height: 200,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildCriticalPatientCard(
-                    context,
-                    mockPatients[0], // Samir
-                    "glucose_level".tr(args: ["385"]),
-                    "status_critical".tr(),
-                    Colors.red,
-                    "4.2",
-                    isDark,
-                  ),
-                  const SizedBox(width: 15),
-                  _buildCriticalPatientCard(
-                    context,
-                    mockPatients[1], // Ezz
-                    "bp_level".tr(args: ["180/110"]),
-                    "status_watch".tr(),
-                    Colors.orange,
-                    "4.7",
-                    isDark,
-                  ),
-                  const SizedBox(width: 15),
-                  _buildCriticalPatientCard(
-                    context,
-                    mockPatients[2], // Mona
-                    "glucose_level".tr(args: ["420"]),
-                    "status_emergency".tr(),
-                    Colors.redAccent,
-                    "4.9",
-                    isDark,
-                  ),
-                  const SizedBox(width: 15),
-                  _buildCriticalPatientCard(
-                    context,
-                    mockPatients[3], // Omar
-                    "bp_level".tr(args: ["165/95"]),
-                    "status_stable".tr(),
-                    AppColors.brandGreen,
-                    "4.5",
-                    isDark,
-                  ),
-                  const SizedBox(width: 15),
-                  _buildCriticalPatientCard(
-                    context,
-                    mockPatients[4], // Safa
-                    "glucose_level".tr(args: ["350"]),
-                    "status_review".tr(),
-                    AppColors.primaryBlue,
-                    "4.3",
-                    isDark,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 25),
-
-            // 5. Nearby Patients Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "nearby_patients".tr(),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: textPrimary,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      color: textSecondary,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "hospital_name".tr(),
-                      style: TextStyle(color: textSecondary, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-            Column(
-              children: [
-                _buildNearbyPatientTile(
-                  "Samir Mahmoud",
-                  "ward_diabetic".tr(),
-                  "room_label".tr(args: ["12"]),
-                  "https://i.pravatar.cc/150?img=12",
-                  isDark,
-                ),
-                _buildNearbyPatientTile(
-                  "Mona Walid",
-                  "ward_heart".tr(),
-                  "room_label".tr(args: ["5"]),
-                  "https://i.pravatar.cc/150?img=15",
-                  isDark,
-                ),
-                _buildNearbyPatientTile(
-                  "Ahmed Zaki",
-                  "ward_icu".tr(),
-                  "room_label".tr(args: ["1"]),
-                  "https://i.pravatar.cc/150?img=18",
-                  isDark,
-                ),
-                _buildNearbyPatientTile(
-                  "Laila Hassan",
-                  "ward_maternity".tr(),
-                  "room_label".tr(args: ["22"]),
-                  "https://i.pravatar.cc/150?img=19",
-                  isDark,
-                ),
-                _buildNearbyPatientTile(
-                  "Youssef Ali",
-                  "ward_orthopedic".tr(),
-                  "room_label".tr(args: ["8"]),
-                  "https://i.pravatar.cc/150?img=20",
-                  isDark,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
     );
   }
 
@@ -509,6 +489,19 @@ class DoctorHomeContent extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  // دالة مساعدة لعرض الصورة سواء كانت رابط أو Base64
+  ImageProvider _getImageProvider(String url) {
+    if (url.startsWith('data:image') || url.contains('base64')) {
+      try {
+        final base64String = url.split(',').last;
+        return MemoryImage(base64Decode(base64String));
+      } catch (e) {
+        return const AssetImage("assets/images/default_doctor.png");
+      }
+    }
+    return NetworkImage(url);
   }
 
   Widget _buildCriticalPatientCard(
@@ -554,11 +547,20 @@ class DoctorHomeContent extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20),
                   ),
-                  child: Image.network(
-                    patient.imageUrl, // 🔥 نستخدم صورة المريض من الموديل
+                  child: Image(
+                    image: _getImageProvider(patient.imageUrl),
                     height: 100,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 100,
+                      color: isDark ? AppColors.darkSurface : Colors.grey[200],
+                      child: const Icon(
+                        Icons.person,
+                        size: 50,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ),
                 ),
                 Positioned(
@@ -686,7 +688,22 @@ class DoctorHomeContent extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(radius: 25, backgroundImage: NetworkImage(imageUrl)),
+          // استبدال CircleAvatar بـ Container دائرى لدعم errorBuilder
+          Container(
+            width: 50,
+            height: 50,
+            decoration: const BoxDecoration(shape: BoxShape.circle),
+            child: ClipOval(
+              child: Image(
+                image: _getImageProvider(imageUrl),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: isDark ? AppColors.darkSurface : Colors.grey[200],
+                  child: const Icon(Icons.person, color: Colors.grey),
+                ),
+              ),
+            ),
+          ),
           const SizedBox(width: 15),
           Expanded(
             child: Column(

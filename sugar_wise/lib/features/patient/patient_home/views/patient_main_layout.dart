@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:sugar_wise/features/patient/booking_patient/booking_patient.dart';
 import 'package:sugar_wise/features/patient/chat_patient/patient_chats_to_doctor/views/patient_chats_view.dart';
 import 'package:sugar_wise/features/patient/patient_home/views/widgets/custom_sidebar.dart';
-import 'package:sugar_wise/features/patient/patient_home/views/widgets/health_metric_view.dart';
 import 'package:sugar_wise/features/patient/patient_profile/view/profile_view.dart';
 import '../view_models/dashboard_view_model.dart';
 import 'patient_dashboard_view.dart';
+import 'package:sugar_wise/features/patient/patient_home/views/patient_menu_dashboard_view.dart';
+import 'package:sugar_wise/features/patient/notfications_patient/notfication/view_model/notifications_view_model.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 import 'widgets/custom_bottom_nav_bar.dart';
 
 class PatientMainLayout extends StatefulWidget {
@@ -19,14 +21,38 @@ class PatientMainLayout extends StatefulWidget {
 class _PatientMainLayoutState extends State<PatientMainLayout> {
   int _currentIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    // جلب الإشعارات عند بدء تشغيل الشاشة الرئيسية
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final notificationsViewModel = Provider.of<NotificationsViewModel>(
+        context,
+        listen: false,
+      );
+
+      if (userProvider.userData != null) {
+        final userId =
+            userProvider.userData!['_id']?.toString() ??
+            userProvider.userData!['id']?.toString();
+        if (userId != null) {
+          notificationsViewModel.fetchNotifications(
+            userId,
+            token: userProvider.token,
+          );
+        }
+      }
+    });
+  }
+
   // قائمة الشاشات (الآن لدينا الرئيسية فقط، يمكنك إضافة الباقي لاحقاً)
   final List<Widget> _pages = [
     const PatientDashboardView(),
     const BookingScreen(),
-    const DietarySystemsView(),
+    const PatientMenuDashboardView(),
     const PatientChatsView(),
     const ProfileView(),
-    // const ProfileView(),
   ];
 
   @override

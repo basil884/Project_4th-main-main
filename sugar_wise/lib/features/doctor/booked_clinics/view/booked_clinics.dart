@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/patient/patient_profile/models/patient_profile_model.dart';
-import 'package:sugar_wise/features/doctor/doctor_home/view/doctor_home.dart';
+import 'package:provider/provider.dart';
+import 'package:sugar_wise/features/doctor/doctor_home/ViewModel/home_view_model.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 
 class BookedAppointment {
   final PatientProfileModel patient;
@@ -31,49 +33,60 @@ class _BookedClinicsState extends State<BookedClinics> {
   String selectedClinic = "Care Clinic";
   String searchQuery = "";
 
-  late List<BookedAppointment> allAppointments;
+  late List<BookedAppointment> allAppointments = [];
 
   @override
   void initState() {
     super.initState();
-    // Using dummy patients from DoctorHomeContent.mockPatients
-    allAppointments = [
-      BookedAppointment(
-        patient: DoctorHomeContent.mockPatients[0],
-        date: "2026-05-01 10:00 AM",
-        day: "Friday",
-        status: "Confirmed",
-        clinicName: "Care Clinic",
-      ),
-      BookedAppointment(
-        patient: DoctorHomeContent.mockPatients[1],
-        date: "2026-05-02 11:30 AM",
-        day: "Saturday",
-        status: "Pending",
-        clinicName: "Care Clinic",
-      ),
-      BookedAppointment(
-        patient: DoctorHomeContent.mockPatients[2],
-        date: "2026-05-03 01:00 PM",
-        day: "Sunday",
-        status: "Confirmed",
-        clinicName: "Smile Clinic",
-      ),
-      BookedAppointment(
-        patient: DoctorHomeContent.mockPatients[3],
-        date: "2026-05-04 09:15 AM",
-        day: "Monday",
-        status: "Cancelled",
-        clinicName: "Health Clinic",
-      ),
-      BookedAppointment(
-        patient: DoctorHomeContent.mockPatients[4],
-        date: "2026-05-05 02:45 PM",
-        day: "Tuesday",
-        status: "Confirmed",
-        clinicName: "Care Clinic",
-      ),
-    ];
+    _loadRealData();
+  }
+
+  void _loadRealData() {
+    // سيتم استدعاؤها بعد بناء الواجهة للوصول للـ Provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final homeVM = Provider.of<HomeViewModel>(context, listen: false);
+      final realPatients = homeVM.patients;
+
+      if (realPatients.isNotEmpty) {
+        setState(() {
+          allAppointments = realPatients.asMap().entries.map((entry) {
+            int idx = entry.key;
+            var patient = entry.value;
+
+            // محاولة جلب اسم عيادة الطبيب الحقيقية من الـ UserProvider
+            final userProvider = Provider.of<UserProvider>(
+              context,
+              listen: false,
+            );
+            final docClinic =
+                userProvider.userData?['clinicName'] ?? "Care Clinic";
+
+            List<String> clinics = [docClinic, "Smile Clinic", "Health Clinic"];
+            List<String> statuses = ["Confirmed", "Pending", "Cancelled"];
+            List<String> days = [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+            ];
+
+            return BookedAppointment(
+              patient: patient,
+              date: "2026-05-${10 + idx} 10:00 AM",
+              day: days[idx % days.length],
+              status: statuses[idx % statuses.length],
+              clinicName: clinics[idx % clinics.length],
+            );
+          }).toList();
+
+          // تحديث العيادة المختارة لتطابق أول موعد موجود
+          if (allAppointments.isNotEmpty) {
+            selectedClinic = allAppointments.first.clinicName;
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -368,12 +381,32 @@ class _BookedClinicsState extends State<BookedClinics> {
                                       : const Color(0xFFF8FAFC),
                                   child: Row(
                                     children: [
-                                      _headerCell("patient_label".tr(), 150, isDark),
+                                      _headerCell(
+                                        "patient_label".tr(),
+                                        150,
+                                        isDark,
+                                      ),
                                       _headerCell("age_label".tr(), 80, isDark),
-                                      _headerCell("date_label".tr(), 150, isDark),
-                                      _headerCell("day_label".tr(), 100, isDark),
-                                      _headerCell("status_label".tr(), 100, isDark),
-                                      _headerCell("action_label".tr(), 80, isDark),
+                                      _headerCell(
+                                        "date_label".tr(),
+                                        150,
+                                        isDark,
+                                      ),
+                                      _headerCell(
+                                        "day_label".tr(),
+                                        100,
+                                        isDark,
+                                      ),
+                                      _headerCell(
+                                        "status_label".tr(),
+                                        100,
+                                        isDark,
+                                      ),
+                                      _headerCell(
+                                        "action_label".tr(),
+                                        80,
+                                        isDark,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -518,7 +551,7 @@ class _BookedClinicsState extends State<BookedClinics> {
           SizedBox(
             width: 80,
             child: Text(
-              app.patient.age,
+              "${app.patient.age} Y",
               style: TextStyle(
                 fontSize: 13,
                 color: isDark

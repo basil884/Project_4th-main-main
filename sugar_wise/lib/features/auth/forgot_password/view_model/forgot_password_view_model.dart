@@ -20,16 +20,6 @@ class ForgotPasswordViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 🔥 1. تجهيز الـ JSON للـ Node.js
-      // final payload = {"email": email};
-
-      // print("🚀====== NODE.JS PAYLOAD (STEP 1: SEND OTP) ======🚀");
-      // print(jsonEncode(payload));
-      // print("🚀==================================================🚀");
-
-      // 2. إرسال الـ Request (استبدل الرابط برابط السيرفر الحقيقي لاحقاً)
-      // final response = await _dio.post("https://your-api.com/api/auth/forgot-password", data: payload);
-
       await Future.delayed(const Duration(seconds: 2)); // محاكاة
 
       _isLoading = false;

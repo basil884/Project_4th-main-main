@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/services/zego_call_service.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
 import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/about_us_view.dart';
 import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/blog_view.dart';
@@ -16,6 +17,7 @@ import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/press_media_
 import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/privacy_policy_view.dart';
 import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/terms_of_service_view.dart';
 import 'package:sugar_wise/features/doctor/doctor_view_patient/view/doctor_view_patient.dart';
+import 'package:sugar_wise/features/patient/Shop/shop_page/shop.dart';
 import 'package:sugar_wise/features/patient/insulin_calculator_patient/view/insulin_calculator_patient.dart';
 import 'package:sugar_wise/features/patient/orders/view/orders_view.dart';
 import 'package:sugar_wise/features/patient/patient_profile/view/profile_view.dart';
@@ -174,9 +176,7 @@ class CustomSidebar extends StatelessWidget {
                     "shoop",
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const OrdersView(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const Shop()),
                     ),
                   ),
                   _buildDrawerItem(
@@ -286,15 +286,18 @@ class CustomSidebar extends StatelessWidget {
                   Icons.logout,
                   "Logout",
                   isLogout: true,
-                  onTap: () {
-                    // هنا يمكنك إضافة منطق تسجيل الخروج الخاص بك
+                  onTap: () async {
+                    // ✅ قطع الاتصال بـ Zego لضمان عدم استقبال مكالمات بعد تسجيل الخروج
+                    await ZegoCallService().uninit();
+
+                    if (!context.mounted) return;
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const LoginView(),
                       ),
                       (route) => false,
-                    ); // إغلاق السايدبار
+                    );
                   },
                 ),
               ],

@@ -4,7 +4,6 @@ import 'package:sugar_wise/features/patient/patient_profile/edit_profile_patient
 import 'package:sugar_wise/features/patient/patient_profile/models/patient_profile_model.dart';
 import 'package:provider/provider.dart';
 import 'package:sugar_wise/features/patient/patient_profile/view_models/profile_view_model.dart';
-import 'package:sugar_wise/core/theme/app_colors.dart';
 
 class ProfileHeader extends StatelessWidget {
   final PatientProfileModel patient;

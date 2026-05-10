@@ -159,7 +159,6 @@ class _RegisterContent extends StatelessWidget {
                                     const CreateDoctorStep1View(),
                               ),
                             );
-                            // print("Go to Doctor Registration");
                           }
                         }
                       : null, // الزر سيكون معطلاً (Disabled) إذا لم يتم الاختيار

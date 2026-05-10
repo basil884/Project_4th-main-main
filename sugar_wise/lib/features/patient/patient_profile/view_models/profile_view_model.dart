@@ -8,6 +8,7 @@ class ProfileViewModel extends ChangeNotifier {
     name: "Basil Ashraf",
     imageUrl: "", // تم تفريغ الرابط لمنع الانهيار لأن الصورة غير موجودة
     patientId: "SW-4029",
+    dbId: "69f91dcf008e640aa050cb36", // معرف افتراضي مطابق لقاعدة البيانات
     height: "175",
     weight: "60",
     age: "22 Years",
@@ -22,6 +23,54 @@ class ProfileViewModel extends ChangeNotifier {
     otherMedications: ["Vitamin D3", "Multivitamin"],
   );
 
+  // 🔥 دالة جديدة لتحديث البيانات من الـ UserProvider (الباك إيند)
+  void updateFromBackend(Map<String, dynamic> data) {
+    // السيرفر يضع البيانات في حقل 'patient' بعد الـ Populate
+    final patient = data['patient'] is Map<String, dynamic>
+        ? data['patient']
+        : data;
+
+    patientData = PatientProfileModel(
+      name:
+          "${patient['firstName'] ?? data['name']?.split(' ')?.first ?? ''} ${patient['lastName'] ?? data['name']?.split(' ')?.skip(1)?.join(' ') ?? ''}",
+      imageUrl: patient['profileImage'] ?? data['image'] ?? "",
+      patientId: patient['Patient_Id'] ?? "SW-0000",
+      dbId: patient['_id'] ?? data['_id'] ?? "", // ✅ جلب المعرف الحقيقي
+      height: patient['height']?.toString() ?? "0",
+      weight: patient['weight']?.toString() ?? "0",
+      age: _calculateAge(patient['birthday']),
+      gender: patient['gender'] ?? "Male",
+      bloodType: patient['bloodType'] ?? "A+",
+      address: "${patient['city'] ?? ''}, ${patient['governorate'] ?? ''}",
+      phone: patient['phoneNumber'] ?? patient['phone'] ?? "",
+      primaryCondition: (patient['medicalCondition'] is List)
+          ? (patient['medicalCondition'] as List).join(", ")
+          : (patient['medicalCondition']?.toString() ?? "None"),
+      conditionDuration: "${patient['diabetesYears'] ?? 0} Years",
+      basalInsulin: "Not Set",
+      bolusInsulin: "Not Set",
+      otherMedications: [],
+    );
+    notifyListeners();
+  }
+
+  // دالة مساعدة لحساب العمر من تاريخ الميلاد
+  String _calculateAge(String? birthday) {
+    if (birthday == null) return "Unknown";
+    try {
+      final birthDate = DateTime.parse(birthday);
+      final today = DateTime.now();
+      int age = today.year - birthDate.year;
+      if (today.month < birthDate.month ||
+          (today.month == birthDate.month && today.day < birthDate.day)) {
+        age--;
+      }
+      return "$age Years";
+    } catch (e) {
+      return "Unknown";
+    }
+  }
+
   // 🔥 1. دالة لاسترجاع البيانات المحفوظة عند فتح التطبيق
   Future<void> loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,7 +81,8 @@ class ProfileViewModel extends ChangeNotifier {
         name: prefs.getString('p_name') ?? patientData.name,
         phone: prefs.getString('p_phone') ?? patientData.phone,
         imageUrl: prefs.getString('p_image') ?? patientData.imageUrl,
-        patientId: patientData.patientId, // الـ ID يظل كما هو
+        patientId: patientData.patientId,
+        dbId: patientData.dbId, // ✅ الحفاظ على المعرف
         age: prefs.getString('p_age') ?? patientData.age,
         gender: prefs.getString('p_gender') ?? patientData.gender,
         bloodType: prefs.getString('p_bloodType') ?? patientData.bloodType,
@@ -45,8 +95,7 @@ class ProfileViewModel extends ChangeNotifier {
             prefs.getString('p_duration') ?? patientData.conditionDuration,
         basalInsulin: prefs.getString('p_basal') ?? patientData.basalInsulin,
         bolusInsulin: prefs.getString('p_bolus') ?? patientData.bolusInsulin,
-        otherMedications:
-            patientData.otherMedications, // الأدوية تظل كما هي حالياً
+        otherMedications: patientData.otherMedications,
       );
       notifyListeners(); // تحديث الواجهة بالبيانات المحفوظة
     }
@@ -73,6 +122,7 @@ class ProfileViewModel extends ChangeNotifier {
       phone: newPhone,
       imageUrl: newImagePath ?? patientData.imageUrl,
       patientId: patientData.patientId,
+      dbId: patientData.dbId, // ✅ الحفاظ على المعرف
       age: newAge,
       gender: newGender,
       bloodType: newBloodType,

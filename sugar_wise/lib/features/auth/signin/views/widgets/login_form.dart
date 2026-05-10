@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/core/custom_text_field.dart';
 import 'package:sugar_wise/features/auth/forgot_password/view/forgot_password_view.dart';
@@ -8,6 +9,7 @@ import 'package:sugar_wise/features/auth/register/ask_registration/views/registe
 import 'package:sugar_wise/features/auth/signin/view_models/login_view_model.dart';
 import 'package:sugar_wise/features/doctor/doctor_home/view/doctor_home.dart';
 import 'package:sugar_wise/features/patient/bluetooth_scanner/view/connect_sensor_view.dart';
+import 'package:sugar_wise/core/services/zego_call_service.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -36,6 +38,7 @@ class _LoginFormState extends State<LoginForm> {
     final savedEmail = await _secureStorage.read(key: 'email');
     final savedPassword = await _secureStorage.read(key: 'password');
     if (savedEmail != null && savedPassword != null) {
+      if (!mounted) return;
       setState(() {
         _emailController.text = savedEmail;
         _passwordController.text = savedPassword;
@@ -54,6 +57,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<LoginViewModel>(context);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // ألوان النصوص حسب الثيم
@@ -151,7 +155,7 @@ class _LoginFormState extends State<LoginForm> {
             child: ElevatedButton(
               onPressed: viewModel.isLoading
                   ? null
-                  : () => _handleLogin(context, viewModel),
+                  : () => _handleLogin(context, viewModel, userProvider),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
@@ -317,10 +321,10 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
-  // ─── منطق تسجيل الدخول ──────────────────────────────────────────
   Future<void> _handleLogin(
     BuildContext context,
     LoginViewModel viewModel,
+    UserProvider userProvider,
   ) async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -335,7 +339,7 @@ class _LoginFormState extends State<LoginForm> {
       return;
     }
 
-    final role = await viewModel.login(email, password);
+    final role = await viewModel.login(email, password, userProvider);
     if (!context.mounted) return;
 
     if (_rememberMe) {
@@ -349,12 +353,24 @@ class _LoginFormState extends State<LoginForm> {
     if (!context.mounted) return;
 
     if (role == 'patient') {
+      // ✅ await مهم: يمنع setState-after-dispose بضمان انتهاء التهيئة قبل التنقل
+      await ZegoCallService().init(
+        userId: userProvider.baseUserId,
+        userName: userProvider.name,
+      );
+      if (!context.mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const ConnectSensorView()),
         (route) => false,
       );
     } else if (role == 'doctor') {
+      // ✅ await مهم: يمنع setState-after-dispose بضمان انتهاء التهيئة قبل التنقل
+      await ZegoCallService().init(
+        userId: userProvider.baseUserId,
+        userName: userProvider.name,
+      );
+      if (!context.mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const DoctorHome()),

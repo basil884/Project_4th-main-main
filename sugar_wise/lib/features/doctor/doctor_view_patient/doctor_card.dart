@@ -35,24 +35,25 @@ class DoctorCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
-                child: Image.asset(
-                  doctor.image,
-                  height: 180,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 180,
-                      width: double.infinity,
-                      color: Colors.teal.shade100,
-                      child: const Icon(
-                        Icons.person,
-                        size: 80,
-                        color: Colors.teal,
+                child: doctor.image.startsWith('http')
+                    ? Image.network(
+                        doctor.image,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildErrorPlaceholder();
+                        },
+                      )
+                    : Image.asset(
+                        doctor.image,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildErrorPlaceholder();
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
               Positioned(
                 top: 12,
@@ -181,7 +182,7 @@ class DoctorCard extends StatelessWidget {
                     onPressed: () {
                       // تجهيز بيانات الطبيب المختار وتمريرها لشاشة التفاصيل
                       final selectedDoctor = DoctorDetailsModel(
-                        // ... (بياناتك السابقة كما هي)
+                        id: doctor.id,
                         name: doctor.name,
                         specialty: doctor.specialty,
                         jobTitle: doctor.workplace.isEmpty
@@ -234,6 +235,7 @@ class DoctorCard extends StatelessWidget {
                             clinics: [],
                           ),
                         ],
+                        reviews: doctor.reviews,
                       );
                       Navigator.push(
                         context,
@@ -265,6 +267,15 @@ class DoctorCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildErrorPlaceholder() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      color: Colors.teal.shade50,
+      child: Icon(Icons.person, size: 80, color: Colors.teal.shade200),
     );
   }
 }

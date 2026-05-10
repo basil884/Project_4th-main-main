@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/doctor/doctor_details/view_models/doctor_details_view_model.dart';
-import 'package:sugar_wise/features/patient/chat_patient/patient_chats_to_doctor/views/patient_chats_view.dart';
 import 'package:sugar_wise/features/patient/chat_patient/patient_chats_to_doctor/models/chat_thread_model.dart';
 import 'package:sugar_wise/features/patient/chat_patient/patient_chats_to_doctor/views/chat_view.dart';
+import 'package:sugar_wise/features/patient/chat_patient/patient_chats_to_doctor/view_models/patient_chats_view_model.dart';
+import 'package:sugar_wise/features/doctor/doctor_view_patient/view_models/doctors_view_modle.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
 
 class DoctorProfileHeader extends StatelessWidget {
   const DoctorProfileHeader({super.key});
@@ -12,6 +15,8 @@ class DoctorProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DoctorDetailsViewModel>(context);
+    // 🔥 الاستماع لتحديثات الأطباء لكي يتم فتح المراسلة فوراً عند الحجز
+    Provider.of<DoctorsViewModel>(context);
     final doctor = viewModel.doctor;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -37,7 +42,11 @@ class DoctorProfileHeader extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(2),
-                child: const Icon(Icons.verified, color: AppColors.primaryBlue, size: 24),
+                child: const Icon(
+                  Icons.verified,
+                  color: AppColors.primaryBlue,
+                  size: 24,
+                ),
               ),
           ],
         ),
@@ -86,90 +95,170 @@ class DoctorProfileHeader extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         // 4. الأزرار (Follow & Message)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                viewModel.toggleFollow();
-                if (viewModel.isFollowing) {
-                  patientChatsViewModel.addDoctorToChats(
-                    doctorName: 'Dr. ${doctor.name}',
-                    doctorImage: doctor.imagePath,
-                    lastMessage: "You started following Dr. ${doctor.name}",
-                    doctorDetails:
-                        doctor, // ✅ أرسلنا بيانات الدكتور الحقيقية الكاملة هنا!
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: viewModel.isFollowing
-                    ? Colors.grey[300]
-                    : AppColors.primaryBlue,
-                foregroundColor: viewModel.isFollowing
-                    ? Colors.black
-                    : Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text(
-                viewModel.isFollowing ? "Following" : "Follow",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(width: 15),
+        Consumer<PatientChatsViewModel>(
+          builder: (context, patientChatsViewModel, child) {
+            // التحقق من وجود حجز مسبق
+            bool hasBooked = globalDoctorsList.any((d) => d.id == doctor.id);
+            // التحقق من وجود محادثة سابقة
+            bool hasChat = patientChatsViewModel.filteredChats.any(
+              (chat) => chat.doctorId == doctor.id,
+            );
+            // السماح بالمراسلة
+            bool canMessage = hasBooked || hasChat;
 
-            ElevatedButton(
-              onPressed: () {
-                // 1. إضافة الدكتور لقائمة المحادثات (إذا لم يكن موجوداً)
-                patientChatsViewModel.addDoctorToChats(
-                  doctorName: 'Dr. ${doctor.name}',
-                  doctorImage: doctor.imagePath,
-                  lastMessage: "New Conversation started...",
-                  doctorDetails: doctor,
-                );
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    final userProvider = Provider.of<UserProvider>(
+                      context,
+                      listen: false,
+                    );
+                    final currentPatientId = userProvider.userId;
 
-                // 2. تجهيز بيانات المحادثة الحالية للانتقال
-                final currentChat = ChatThreadModel(
-                  doctorId: doctor.name,
-                  doctorName: 'Dr. ${doctor.name}',
-                  doctorImage: doctor.imagePath,
-                  lastMessage: "New Conversation started...",
-                  realDoctorDetails: doctor,
-                );
+                    final patientChatsViewModel =
+                        Provider.of<PatientChatsViewModel>(
+                          context,
+                          listen: false,
+                        );
 
-                // 3. السحر هنا 🪄: الانتقال الفعلي لشاشة المحادثة الخاصة بهذا الدكتور
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatView(chat: currentChat),
+                    viewModel.toggleFollow();
+                    if (viewModel.isFollowing && canMessage) {
+                      patientChatsViewModel.addDoctorToChats(
+                        chatId:
+                            "${currentPatientId}_${doctor.id}", // ✅ توحيد المعرف
+                        doctorName: 'Dr. ${doctor.name}',
+                        doctorImage: doctor.imagePath,
+                        lastMessage: "You started following Dr. ${doctor.name}",
+                        doctorDetails: doctor,
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: viewModel.isFollowing
+                        ? Colors.grey[300]
+                        : AppColors.primaryBlue,
+                    foregroundColor: viewModel.isFollowing
+                        ? Colors.black
+                        : Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
-                foregroundColor: AppColors.primaryBlue,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 12,
+                  child: Text(
+                    viewModel.isFollowing ? "Following" : "Follow",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 15),
+
+                ElevatedButton(
+                  onPressed: () async {
+                    final userProvider = Provider.of<UserProvider>(
+                      context,
+                      listen: false,
+                    );
+
+                    // 1. Show loading
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) =>
+                          const Center(child: CircularProgressIndicator()),
+                    );
+
+                    try {
+                      // 2. Get or Create Chat on Server
+                      final response = await ApiClient.postData(
+                        endpoint: 'messages/chats/direct',
+                        data: {
+                          'userId1': userProvider.baseUserId,
+                          'userId2': doctor.id, // Doctor's DB ID
+                        },
+                        token: userProvider.token,
+                      );
+
+                      if (context.mounted) {
+                        Navigator.pop(context); // Hide loading
+                      }
+
+                      if (response.statusCode == 200 ||
+                          response.statusCode == 201) {
+                        if (!context.mounted) return; // 🛡️ حماية ضد الثغرات البرمجية بعد الـ await
+
+                        final chatData = response.data['data'];
+                        final realChatId = chatData['_id'];
+
+                        final patientChatsViewModel =
+                            Provider.of<PatientChatsViewModel>(
+                              context,
+                              listen: false,
+                            );
+
+                        // 3. Add to patient's chat list
+                        patientChatsViewModel.addDoctorToChats(
+                          chatId: realChatId,
+                          doctorName: 'Dr. ${doctor.name}',
+                          doctorImage: doctor.imagePath,
+                          lastMessage: "New Conversation started...",
+                          doctorDetails: doctor,
+                        );
+
+                        // 4. Create current chat model
+                        final currentChat = ChatThreadModel(
+                          chatId: realChatId,
+                          doctorId: doctor.id,
+                          doctorName: 'Dr. ${doctor.name}',
+                          doctorImage: doctor.imagePath,
+                          lastMessage: "New Conversation started...",
+                          realDoctorDetails: doctor,
+                        );
+
+                        // 5. Navigate to ChatView
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatView(chat: currentChat),
+                            ),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      if (context.mounted) Navigator.pop(context);
+                      debugPrint("❌ Error starting chat: $e");
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: canMessage
+                        ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.2),
+                    foregroundColor: canMessage
+                        ? AppColors.primaryBlue
+                        : Colors.grey,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    "Message",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              child: const Text(
-                "Message",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ],
     );

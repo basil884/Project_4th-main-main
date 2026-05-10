@@ -1,15 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import '../models/chat_thread_model.dart';
-import 'package:sugar_wise/features/doctor/doctor_details/views/doctor_details_view.dart';
+import 'package:sugar_wise/core/api/socket_service.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
+import 'dart:async';
 
-// ✅ 2. موديل صغير خاص بالرسائل داخل هذه الشاشة
+import 'package:sugar_wise/features/doctor/doctor_view_patient_profile/view/doctor_view_patient_profile.dart';
+import 'package:sugar_wise/features/patient/patient_profile/models/patient_profile_model.dart';
+import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+import 'package:zego_uikit/zego_uikit.dart';
+
 class ChatMessage {
   final String text;
   final bool isMe;
   final String time;
+  final bool isRead;
 
-  ChatMessage({required this.text, required this.isMe, required this.time});
+  ChatMessage({
+    required this.text,
+    required this.isMe,
+    required this.time,
+    this.isRead = false,
+  });
 }
 
 // ✅ 3. تحويل الشاشة إلى StatefulWidget لتتفاعل مع كتابة الرسائل
@@ -25,57 +39,213 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final SocketService _socketService = SocketService();
   List<ChatMessage> messages = [];
+  bool _isOpponentTyping = false;
+  Timer? _typingTimer;
 
   // 🔥 متغيرات البوت العائم القابل للسحب
-  Offset _botOffset = Offset.zero;
   bool _isBotInitialized = false;
+
+  String _opponentStatus = "Offline";
 
   @override
   void initState() {
     super.initState();
-    // تجهيز رسائل البداية
-    messages = [
-      ChatMessage(
-        text: "Hello! How can I help you today?",
-        isMe: false,
-        time: "10:00 AM",
-      ),
-      ChatMessage(text: widget.chat.lastMessage, isMe: true, time: "10:05 AM"),
-    ];
+
+    // 1. الاتصال بالـ Socket
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (userProvider.isLoggedIn) {
+      _socketService.connect(userProvider.baseUserId);
+
+      // 2. الانضمام لغرفة المحادثة الموحدة
+      _socketService.joinChat(widget.chat.chatId);
+
+      // 🌟 الاستماع لتحديثات حالة المستخدم (متصل / آخر ظهور)
+      _socketService.socket?.on('user_status_change', (data) {
+        if (mounted) {
+          // نتأكد أن التحديث يخص المريض/الطبيب الذي نراسله حالياً
+          // data يحتوي على userId, status, و lastSeen
+          setState(() {
+            if (data['status'] == 'Online') {
+              _opponentStatus = "Online";
+            } else {
+              if (data['lastSeen'] != null) {
+                try {
+                  final dt = DateTime.parse(data['lastSeen']).toLocal();
+                  final timeStr = TimeOfDay.fromDateTime(dt).format(context);
+                  _opponentStatus = "Last seen at $timeStr";
+                } catch (_) {
+                  _opponentStatus = "Offline";
+                }
+              } else {
+                _opponentStatus = "Offline";
+              }
+            }
+          });
+        }
+      });
+
+      // 3. الاستماع للرسائل القادمة
+      _socketService.socket?.on('message_received', (data) {
+        if (mounted) {
+          setState(() {
+            messages.add(
+              ChatMessage(text: data['text'], isMe: false, time: data['time']),
+            );
+          });
+          _scrollToBottom();
+        }
+      });
+
+      // 4. الاستماع لمؤشر الكتابة
+      _socketService.socket?.on('typing', (_) {
+        if (mounted) setState(() => _isOpponentTyping = true);
+      });
+      _socketService.socket?.on('stop_typing', (_) {
+        if (mounted) setState(() => _isOpponentTyping = false);
+      });
+
+      // 5. جلب الرسائل القديمة من السيرفر
+      _fetchMessages(userProvider.baseUserId, userProvider.token);
+    }
+  }
+
+  bool _isLoadingMessages = true;
+
+  // جلب الرسائل من السيرفر
+  Future<void> _fetchMessages(String userId, String? token) async {
+    try {
+      final response = await ApiClient.getData(
+        endpoint: 'messages/chats/${widget.chat.chatId}',
+        token: token,
+      );
+
+      if (response.statusCode == 200) {
+        final List data = response.data['data'] ?? [];
+        if (mounted) {
+          final userProvider = Provider.of<UserProvider>(
+            context,
+            listen: false,
+          );
+
+          setState(() {
+            messages = data.map((json) {
+              // التحقق مما إذا كانت الرسالة مرسلة من المستخدم الحالي
+              bool isMe = false;
+              if (json['sender'] is Map) {
+                isMe =
+                    json['sender']['_id'] == userProvider.baseUserId ||
+                    json['sender']['email'] == userProvider.email ||
+                    json['sender']['_id'] == userProvider.baseUserId;
+              } else {
+                isMe =
+                    json['sender'] == userProvider.baseUserId ||
+                    json['sender'] == userProvider.baseUserId;
+              }
+
+              // تحويل التوقيت
+              String timeStr = "Just now";
+              if (json['createdAt'] != null) {
+                try {
+                  final dt = DateTime.parse(json['createdAt']).toLocal();
+                  timeStr = TimeOfDay.fromDateTime(dt).format(context);
+                } catch (_) {}
+              }
+
+              return ChatMessage(
+                text: json['messageText'] ?? '',
+                isMe: isMe,
+                time: timeStr,
+                isRead: json['isRead'] ?? false,
+              );
+            }).toList();
+            _isLoadingMessages = false;
+          });
+          _scrollToBottom();
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching messages: $e");
+      if (mounted) setState(() => _isLoadingMessages = false);
+    }
   }
 
   @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _typingTimer?.cancel();
     super.dispose();
   }
 
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   // ✅ 4. دالة إرسال الرسالة
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
     final timeString = TimeOfDay.now().format(context);
+    final messageText = _messageController.text.trim();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
+    // إضافة الرسالة للواجهة فوراً (Optimistic UI)
     setState(() {
       messages.add(
         ChatMessage(
-          text: _messageController.text.trim(),
+          text: messageText,
           isMe: true,
           time: timeString,
+          isRead: false, // 🕒 تبدأ بصح واحد
         ),
       );
     });
 
     _messageController.clear();
+    _socketService.sendStopTyping(widget.chat.chatId);
+    _scrollToBottom();
 
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
+    // إرسال عبر الـ Socket للطرف الآخر بشكل لحظي
+    _socketService.sendMessage({
+      'chatId': widget.chat.chatId,
+      'text': messageText,
+      'time': timeString,
+      'senderId': userProvider.baseUserId,
+    });
+
+    // حفظ الرسالة في السيرفر
+    try {
+      await ApiClient.postData(
+        endpoint: 'messages',
+        data: {
+          'chatId': widget.chat.chatId,
+          'messageText': messageText,
+          'senderId': userProvider.baseUserId,
+          // 'receiverId': widget.chat.doctorId // اختياري في حالة وجود chatId مسبقاً
+        },
+        token: userProvider.token,
       );
+    } catch (e) {
+      debugPrint("❌ Error saving message to database: $e");
+    }
+  }
+
+  void _onTextChanged(String value) {
+    _socketService.sendTyping(widget.chat.chatId);
+
+    _typingTimer?.cancel();
+    _typingTimer = Timer(const Duration(seconds: 2), () {
+      _socketService.sendStopTyping(widget.chat.chatId);
     });
   }
 
@@ -88,11 +258,9 @@ class _ChatViewState extends State<ChatView> {
         : AppColors.scaffoldBackground;
     final cardColor = isDark ? AppColors.darkSurface : Colors.white;
     final textColor = isDark ? AppColors.darkTextPrimary : AppColors.textMain;
-    final size = MediaQuery.of(context).size;
 
     // 🔥 ضبط مكان البوت الافتراضي (أسفل اليمين) عند فتح الشاشة لأول مرة
     if (!_isBotInitialized) {
-      _botOffset = Offset(size.width - 80, size.height - 250);
       _isBotInitialized = true;
     }
 
@@ -108,20 +276,74 @@ class _ChatViewState extends State<ChatView> {
         ),
         titleSpacing: 0,
         title: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    DoctorDetailsView(doctor: widget.chat.realDoctorDetails),
-              ),
+          onTap: () async {
+            // 1. إظهار مؤشر التحميل
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(child: CircularProgressIndicator()),
             );
+
+            try {
+              final userProvider = Provider.of<UserProvider>(
+                context,
+                listen: false,
+              );
+
+              // 2. جلب بيانات المريض من السيرفر
+              final response = await ApiClient.getData(
+                endpoint: 'patients/${widget.chat.doctorId}',
+                token: userProvider.token,
+              );
+
+              // إخفاء مؤشر التحميل
+              if (context.mounted) Navigator.pop(context);
+
+              if (response.statusCode == 200) {
+                // السيرفر يعيد الكائن مباشرة بدون data wrap
+                final patientData = response.data;
+                final patientProfile = PatientProfileModel.fromJson(
+                  patientData,
+                );
+
+                // 3. فتح شاشة ملف المريض (النافذة الشفافة)
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          DoctorViewPatientProfile(patientData: patientProfile),
+                    ),
+                  );
+                }
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to load patient data.'),
+                    ),
+                  );
+                }
+              }
+            } catch (e) {
+              if (context.mounted) {
+                Navigator.pop(context); // إخفاء التحميل في حالة الخطأ
+              }
+              debugPrint('Error fetching patient profile: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Error loading profile.')),
+                );
+              }
+            }
           },
           child: Row(
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundImage: AssetImage(widget.chat.doctorImage),
+                backgroundImage: widget.chat.doctorImage.isNotEmpty
+                    ? NetworkImage(widget.chat.doctorImage) as ImageProvider
+                    : AssetImage(widget.chat.doctorImage),
                 backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
                 onBackgroundImageError: (_, _) {},
                 child: widget.chat.doctorImage.isEmpty
@@ -145,9 +367,19 @@ class _ChatViewState extends State<ChatView> {
                         color: textColor,
                       ),
                     ),
-                    const Text(
-                      "Online",
-                      style: TextStyle(fontSize: 12, color: Colors.green),
+                    Text(
+                      _isOpponentTyping ? "Typing..." : _opponentStatus,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _isOpponentTyping
+                            ? AppColors.primaryBlue
+                            : (_opponentStatus == "Online"
+                                  ? Colors.green
+                                  : Colors.grey),
+                        fontStyle: _isOpponentTyping
+                            ? FontStyle.italic
+                            : FontStyle.normal,
+                      ),
                     ),
                   ],
                 ),
@@ -156,16 +388,46 @@ class _ChatViewState extends State<ChatView> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.call_outlined),
-            color: const Color(0xFF1976D2),
-            onPressed: () {},
+          // 📞 زر المكالمة الصوتية برنين حقيقي
+          ZegoSendCallInvitationButton(
+            isVideoCall: false,
+            invitees: [
+              ZegoUIKitUser(
+                id: widget.chat.doctorId, // معرف الطرف الآخر (المريض)
+                name: widget.chat.doctorName,
+              ),
+            ],
+            iconSize: const Size(28, 28),
+            buttonSize: const Size(44, 44),
+            icon: ButtonIcon(
+              icon: const Icon(
+                Icons.call_outlined,
+                color: Color(0xFF1976D2),
+                size: 24,
+              ),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.videocam_outlined),
-            color: const Color(0xFF1976D2),
-            onPressed: () {},
+          const SizedBox(width: 4),
+          // 🎥 زر المكالمة المرئية برنين حقيقي
+          ZegoSendCallInvitationButton(
+            isVideoCall: true,
+            invitees: [
+              ZegoUIKitUser(
+                id: widget.chat.doctorId,
+                name: widget.chat.doctorName,
+              ),
+            ],
+            iconSize: const Size(28, 28),
+            buttonSize: const Size(44, 44),
+            icon: ButtonIcon(
+              icon: const Icon(
+                Icons.videocam_outlined,
+                color: Color(0xFF1976D2),
+                size: 24,
+              ),
+            ),
           ),
+          const SizedBox(width: 4),
         ],
       ),
 
@@ -173,19 +435,21 @@ class _ChatViewState extends State<ChatView> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(20),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final msg = messages[index];
-                return _buildMessageBubble(
-                  msg: msg,
-                  isDark: isDark,
-                  cardColor: cardColor,
-                );
-              },
-            ),
+            child: _isLoadingMessages
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(20),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+                      return _buildMessageBubble(
+                        msg: msg,
+                        isDark: isDark,
+                        cardColor: cardColor,
+                      );
+                    },
+                  ),
           ),
           // منطقة الكتابة بالأسفل
           Container(
@@ -222,6 +486,7 @@ class _ChatViewState extends State<ChatView> {
                       ),
                       child: TextField(
                         controller: _messageController,
+                        onChanged: _onTextChanged, // ✅ متابعة الكتابة
                         style: TextStyle(
                           color: isDark
                               ? AppColors.darkTextPrimary
@@ -269,7 +534,7 @@ class _ChatViewState extends State<ChatView> {
     return Align(
       alignment: msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 250),
+        constraints: const BoxConstraints(maxWidth: 280), // زدت العرض قليلاً
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
@@ -300,18 +565,33 @@ class _ChatViewState extends State<ChatView> {
                 color: msg.isMe
                     ? Colors.white
                     : (isDark ? AppColors.darkTextPrimary : AppColors.textMain),
-                fontSize: 14,
+                fontSize: 15,
               ),
             ),
             const SizedBox(height: 5),
-            Text(
-              msg.time,
-              style: TextStyle(
-                fontSize: 10,
-                color: msg.isMe
-                    ? Colors.white.withValues(alpha: 0.7)
-                    : (isDark ? AppColors.darkTextSecondary : Colors.grey),
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  msg.time,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: msg.isMe
+                        ? Colors.white.withValues(alpha: 0.8)
+                        : (isDark ? AppColors.darkTextSecondary : Colors.grey),
+                  ),
+                ),
+                if (msg.isMe) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    msg.isRead ? Icons.done_all : Icons.check,
+                    size: 14,
+                    color: msg.isRead
+                        ? Colors.blue[200]
+                        : Colors.white.withValues(alpha: 0.8),
+                  ),
+                ],
+              ],
             ),
           ],
         ),

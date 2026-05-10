@@ -79,7 +79,7 @@ class EditDoctorProfileViewModel extends ChangeNotifier {
       notifyListeners();
       return true; // نجاح
     } catch (e) {
-      // print("❌ Error updating profile: $e");
+      // debugPrint("❌ Error updating profile: $e");
       _isLoading = false;
       notifyListeners();
       return false; // فشل

@@ -6,7 +6,8 @@ import 'package:sugar_wise/features/patient/helpsupport/helpsupport_screen.dart'
 import 'package:sugar_wise/features/patient/language_screen/view/language_screen.dart';
 import 'package:sugar_wise/features/patient/mobile_billing_plans/view/biling_extends.dart';
 // تأكد من صحة هذه المسارات لديك
-import 'package:sugar_wise/features/patient/notfications_patient/notifactions_edit/view/notifaction_edit.dart';
+import 'package:sugar_wise/features/patient/notfications_patient/notfication/view/notifications_view.dart';
+import 'package:sugar_wise/features/patient/notfications_patient/notfication/view_model/notifications_view_model.dart';
 import 'package:sugar_wise/features/patient/patient_profile/edit_profile_patient/edit_profile_patient.dart';
 import 'package:sugar_wise/features/patient/seetings/securty_set/securty_seting_patient.dart';
 import 'package:sugar_wise/features/patient/seetings/settings_view_model.dart';
@@ -86,11 +87,13 @@ class SettingsScreenPatient extends StatelessWidget {
                 title: "Notifications".tr(),
                 isSelected: viewModel.selectedIndex == 1,
                 onTap: () => viewModel.selectItem(1, () {
-                  // تأكد من استدعاء الشاشة الصحيحة (NotificationsView التي صممناها سابقاً)
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NotificationsEdit(),
+                      builder: (context) => ChangeNotifierProvider(
+                        create: (_) => NotificationsViewModel(),
+                        child: const NotificationsView(),
+                      ),
                     ),
                   );
                 }),

@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:sugar_wise/features/patient/chat_patient/chat_bot/view/bot_chat_sheet_view.dart';
 import '../view_models/patient_chats_view_model.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 import 'widgets/chat_search_bar.dart';
 import 'widgets/chat_thread_card.dart';
 
-// ✅ قمنا بإنشاء نسخة ثابتة (Singleton-like behavior) من الـ ViewModel هنا
-// لكي لا يتم مسح البيانات عند الانتقال بين الشاشات في شريط التنقل السفلي
-final patientChatsViewModel = PatientChatsViewModel();
+// The global singleton has been removed. Use Provider.of<PatientChatsViewModel>(context) instead.
 
-// 1. الواجهة الأساسية التي توفر الـ Provider
 class PatientChatsView extends StatelessWidget {
   const PatientChatsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: patientChatsViewModel,
-      child: const _PatientChatsContent(),
-    );
+    return const _PatientChatsContent();
   }
 }
 
@@ -34,6 +30,25 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
   // 🔥 متغيرات البوت العائم للتحكم في موقعه وحركته
   Offset _botOffset = Offset.zero;
   bool _isBotInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final viewModel = Provider.of<PatientChatsViewModel>(
+        context,
+        listen: false,
+      );
+
+      if (userProvider.isLoggedIn) {
+        viewModel.fetchChats(
+          userProvider.baseUserId,
+          token: userProvider.token,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +79,9 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
                   const ChatSearchBar(),
                   const SizedBox(height: 20),
                   Expanded(
-                    child: viewModel.filteredChats.isEmpty
+                    child: viewModel.isLoading
+                        ? _buildShimmerLoading(isDark)
+                        : viewModel.filteredChats.isEmpty
                         ? Center(
                             child: Text(
                               "No chats found",
@@ -174,6 +191,57 @@ class _PatientChatsContentState extends State<_PatientChatsContent> {
           ),
         ],
       ),
+    );
+  }
+
+  // ✅ ويدجت التحميل بالتأثير المضيء (Shimmer Loading) للمحادثات
+  Widget _buildShimmerLoading(bool isDark) {
+    return ListView.builder(
+      itemCount: 6, // عدد الأسطر الوهمية أثناء التحميل
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF262B27) : const Color(0xFFF1FAF2),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Shimmer.fromColors(
+            baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+            highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
+            child: Row(
+              children: [
+                // دائرة مكان صورة الطبيب
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 15),
+                // أسطر مكان الاسم والرسالة
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(width: 120, height: 14, color: Colors.white),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        height: 10,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

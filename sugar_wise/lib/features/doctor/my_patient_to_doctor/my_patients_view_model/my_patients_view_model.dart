@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
 
 // 1. نموذج بيانات المريض
 class PatientModel {
@@ -8,6 +9,7 @@ class PatientModel {
   final int glucoseLevel;
   final int insulinUnits;
   final String insulinType;
+  final String imageUrl; // أضفت هذا السطر
 
   PatientModel({
     required this.id,
@@ -16,7 +18,25 @@ class PatientModel {
     required this.glucoseLevel,
     required this.insulinUnits,
     required this.insulinType,
+    this.imageUrl =
+        "https://ui-avatars.com/api/?name=P&background=random", // قيمة افتراضية
   });
+
+  factory PatientModel.fromJson(Map<String, dynamic> json) {
+    return PatientModel(
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? "",
+      name: "${json['firstName'] ?? ''} ${json['lastName'] ?? ''}".trim(),
+      age: 40, // يمكن حسابه لاحقاً من الميلاد
+      glucoseLevel: json['glucoseLevel'] ?? 100,
+      insulinUnits: json['insulinUnits'] ?? 0,
+      insulinType: json['insulinType'] ?? "None",
+      imageUrl: json['profileImage'] != null
+          ? (json['profileImage'].toString().startsWith('http')
+                ? json['profileImage']
+                : "http://192.168.1.7:5000/${json['profileImage'].toString().startsWith('uploads') ? '' : 'uploads/'}${json['profileImage']}")
+          : "https://ui-avatars.com/api/?name=${json['firstName'] ?? 'P'}&background=random",
+    );
+  }
 
   // تحديد ما إذا كان السكر مرتفعاً (لتلوينه بالأحمر في الواجهة)
   bool get isGlucoseHigh => glucoseLevel > 140;
@@ -26,35 +46,35 @@ class MyPatientsViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  // 2. قائمة المرضى الحالية (مبنية على الصورة)
-  final List<PatientModel> _patients = [
-    PatientModel(
-      id: '1',
-      name: "Ahmed Mohamed",
-      age: 45,
-      glucoseLevel: 180,
-      insulinUnits: 20,
-      insulinType: "Lantus",
-    ),
-    PatientModel(
-      id: '2',
-      name: "Sarah Wilson",
-      age: 32,
-      glucoseLevel: 110,
-      insulinUnits: 10,
-      insulinType: "Novorapid",
-    ),
-    PatientModel(
-      id: '3',
-      name: "John Doe",
-      age: 58,
-      glucoseLevel: 210,
-      insulinUnits: 25,
-      insulinType: "Mix",
-    ),
-  ];
+  List<PatientModel> _patients = [];
+  List<PatientModel> _filteredPatients = []; // القائمة المصفاة للبحث
 
-  List<PatientModel> get patients => _patients;
+  List<PatientModel> get patients => _filteredPatients; // نعرض القائمة المصفاة في الواجهة
+
+  MyPatientsViewModel() {
+    fetchPatients();
+  }
+
+  Future<void> fetchPatients() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await ApiClient.getData(endpoint: 'patients');
+      if (response.statusCode == 200) {
+        final List data = response.data;
+        _patients = data.map((json) => PatientModel.fromJson(json)).toList();
+        _filteredPatients = _patients; // في البداية، القائمة المصفاة تساوي الكل
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching my patients: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 2. تم إيقاف قائمة الموك واستخدام البيانات الحقيقية
 
   // 3. دالة جلب وإضافة مريض جديد عبر الـ ID
   Future<bool> fetchAndAddPatient(String patientId) async {
@@ -79,7 +99,9 @@ class MyPatientsViewModel extends ChangeNotifier {
       );
 
       // إضافة المريض للقائمة
-      _patients.insert(0, newPatient); // نضعه في أعلى القائمة
+      _patients.insert(0, newPatient);
+      _filteredPatients = _patients; // تحديث القائمة المصفاة
+ // نضعه في أعلى القائمة
 
       _isLoading = false;
       notifyListeners();
@@ -91,29 +113,53 @@ class MyPatientsViewModel extends ChangeNotifier {
     }
   }
 
-  // 4. دالة إرسال التقرير (Feedback) للمريض
-  Future<bool> sendFeedback(String patientId, String message) async {
+  // 4. دالة إرسال التقرير (Feedback) للمريض كإشعار حقيقي
+  Future<bool> sendFeedback(String patientId, String message, {String? senderName}) async {
     if (message.isEmpty) return false;
-
+ 
     _isLoading = true;
     notifyListeners();
-
+ 
     try {
-      // 🔥 هنا ستقوم بإرسال الرسالة لـ Node.js لتخزينها في الـ Chat
-      await Future.delayed(const Duration(seconds: 1));
-      // print("✅ Feedback sent to patient $patientId: $message");
+      // إرسال البيانات للسيرفر
+      final response = await ApiClient.postData(
+        endpoint: 'notifications/send',
+        data: {
+          'patientId': patientId,
+          'message': message,
+          'type': 'doctor_feedback',
+          'title': 'New Feedback from Doctor',
+          'senderName': senderName ?? 'Doctor',
+        },
+      );
 
-      _isLoading = false;
-      notifyListeners();
-      return true;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint("✅ Notification sent successfully to $patientId");
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      return false;
     } catch (e) {
+      debugPrint("❌ Error sending notification: $e");
       _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  // 5. دالة لحذف مريض من القائمة (علامة السلة)
+  // 5. دالة البحث عن المرضى
+  void searchPatients(String query) {
+    if (query.isEmpty) {
+      _filteredPatients = _patients;
+    } else {
+      _filteredPatients = _patients
+          .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+    notifyListeners();
+  }
+
   void removePatient(String id) {
     _patients.removeWhere((p) => p.id == id);
     notifyListeners();

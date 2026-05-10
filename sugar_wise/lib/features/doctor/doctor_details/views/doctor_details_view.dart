@@ -106,30 +106,33 @@ class _DoctorDetailsContent extends StatelessWidget {
               // 4. محتوى التبويبات (TabBarView)
               // وضعنا محدد ارتفاع (SizedBox) لأن الـ TabBarView يحتاج لارتفاع ثابت داخل الـ ScrollView
               SizedBox(
-                height: 500, // يمكنك تعديل هذا الارتفاع حسب الحاجة
+                height: 1000, // يمكنك تعديل هذا الارتفاع حسب الحاجة
                 child: TabBarView(
                   children: [
-                    // --- التبويب الأول: السيرة الذاتية (About) ---
-                    Column(
-                      children: [
-                        DoctorStatsSection(doctor: viewModel.doctor),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(
-                              color: isDark
-                                  ? Colors.grey[800]!
-                                  : Colors.grey[100]!,
+                    SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        children: [
+                          DoctorStatsSection(doctor: viewModel.doctor),
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.grey[800]!
+                                    : Colors.grey[100]!,
+                              ),
+                            ),
+                            child: DoctorAboutSection(
+                              biography: viewModel.doctor.biography,
+                              reviews: viewModel.doctor.reviews,
                             ),
                           ),
-                          child: DoctorAboutSection(
-                            biography: viewModel.doctor.biography,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
                     // --- التبويب الثاني: العيادات (Clinics) ---
@@ -139,7 +142,11 @@ class _DoctorDetailsContent extends StatelessWidget {
                       itemCount: viewModel.doctor.clinics.length,
                       itemBuilder: (context, index) {
                         return ClinicLocationCard(
+                          doctorId: viewModel.doctor.id,
                           clinic: viewModel.doctor.clinics[index],
+                          doctorName: viewModel.doctor.name,
+                          doctorImage: viewModel.doctor.imagePath,
+                          specialty: viewModel.doctor.specialty,
                         );
                       },
                     ),

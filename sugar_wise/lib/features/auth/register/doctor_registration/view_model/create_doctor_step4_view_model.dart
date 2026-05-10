@@ -1,9 +1,7 @@
-import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
 
 class CreateDoctorStep4ViewModel extends ChangeNotifier {
-  final Dio _dio = Dio();
   String _detailedAddress = '';
   String? _governorate;
   String _city = '';
@@ -18,7 +16,7 @@ class CreateDoctorStep4ViewModel extends ChangeNotifier {
     'Alexandria',
     'Dakahlia',
     'Red Sea',
-    'Sharkia',
+    'Sharqia',
     'Aswan',
     'Luxor',
   ];
@@ -56,9 +54,7 @@ class CreateDoctorStep4ViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 🚀 الدالة النهائية: دمج كل البيانات وإرسالها للسيرفر
-
-  // الدالة المستقبلية الحقيقية
+  // 🚀 الدالة النهائية: إرسال البيانات للسيرفر
   Future<bool> submitFinalProfile(
     Map<String, dynamic> previousStepsData,
   ) async {
@@ -69,106 +65,50 @@ class CreateDoctorStep4ViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. استخراج مسارات الصور من البيانات السابقة (لكي نرفعها كملفات حقيقية)
-      final professionalInfo =
-          previousStepsData['professionalInfo'] as Map<String, dynamic>;
-      String? idFrontPath = professionalInfo['idFrontPath'];
-      String? idBackPath = professionalInfo['idBackPath'];
-      String? selfiePath = professionalInfo['selfiePath'];
-      String? certPath = professionalInfo['certPath'];
-
-      // 🔥 لمسة احترافية: نحذف مسارات الصور من الـ JSON النصي لأن السيرفر لا يحتاج المسار المحلي لموبايلك!
-      professionalInfo.remove('idFrontPath');
-      professionalInfo.remove('idBackPath');
-      professionalInfo.remove('selfiePath');
-      professionalInfo.remove('certPath');
-
-      // 2. تجميع البيانات النصية المتبقية
-      final textPayload = {
-        ...previousStepsData,
-        'practiceLocation': {
-          'detailedAddress': _detailedAddress,
-          'governorate': _governorate,
-          'city': _city,
-        },
+      // تجهيز بيانات الطبيب لتطابق Doctor.js في سيرفرك
+      final Map<String, dynamic> doctorBody = {
+        "firstName": previousStepsData['personalInfo']?['firstName'] ?? '',
+        "lastName": previousStepsData['personalInfo']?['lastName'] ?? '',
+        "email": previousStepsData['accountInfo']?['email'] ?? '',
+        "password": previousStepsData['accountInfo']?['password'] ?? '',
+        "role": "Doctor",
+        "gender": previousStepsData['personalInfo']?['gender'] ?? 'Male',
+        "birthday": previousStepsData['personalInfo']?['birthday'] ?? '',
+        "phoneNumber": previousStepsData['personalInfo']?['phoneNumber'] ?? '',
+        "medicalSpecialty":
+            previousStepsData['professionalInfo']?['specialty'] ?? '',
+        "university":
+            previousStepsData['professionalInfo']?['university'] ?? '',
+        "experienceYears":
+            int.tryParse(
+              previousStepsData['professionalInfo']?['experience']
+                      ?.toString() ??
+                  '0',
+            ) ??
+            0,
+        "governorate": _governorate,
+        "city": _city,
+        "address": _detailedAddress,
+        "profileImage": "../Images/Users/Default.jpg",
+        "Status": "Offline",
       };
 
-      // 3. تجهيز الـ FormData (الوعاء الذي يحمل النصوص + الملفات معاً)
-      FormData formData = FormData.fromMap({
-        // نرسل كل البيانات النصية كـ JSON مدمج في حقل واحد اسمه doctorData (أو حسب طلب مبرمج الباك إيند)
-        "doctorData": jsonEncode(textPayload),
-      });
-
-      // 4. إضافة الملفات (الصور) إلى الـ FormData
-      if (idFrontPath != null) {
-        formData.files.add(
-          MapEntry(
-            "idFrontImage",
-            await MultipartFile.fromFile(idFrontPath, filename: "id_front.jpg"),
-          ),
-        );
-      }
-      if (idBackPath != null) {
-        formData.files.add(
-          MapEntry(
-            "idBackImage",
-            await MultipartFile.fromFile(idBackPath, filename: "id_back.jpg"),
-          ),
-        );
-      }
-      if (selfiePath != null) {
-        formData.files.add(
-          MapEntry(
-            "selfieImage",
-            await MultipartFile.fromFile(selfiePath, filename: "selfie.jpg"),
-          ),
-        );
-      }
-      if (certPath != null) {
-        formData.files.add(
-          MapEntry(
-            "certificateImage",
-            await MultipartFile.fromFile(certPath, filename: "certificate.jpg"),
-          ),
-        );
-      }
-
-      // 5. إرسال الـ Request إلى سيرفر الـ Node.js
-      final response = await _dio.post(
-        "https://your-nodejs-api.com/api/doctors/register", // 🌐 ضع رابط السيرفر الحقيقي هنا
-        data: formData,
-        options: Options(
-          headers: {
-            // هذا الهيدر يخبر السيرفر أنك ترسل ملفات ونصوص معاً
-            "Content-Type": "multipart/form-data",
-          },
-        ),
+      // إرسال الطلب لمسار الأطباء الحقيقي
+      final response = await ApiClient.postData(
+        endpoint: 'doctors',
+        data: doctorBody,
       );
 
-      // 6. التحقق من رد السيرفر
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        // print("✅ Success! Server Response: ${response.data}");
+      if (response.statusCode == 201 || response.statusCode == 200) {
         _isLoading = false;
         notifyListeners();
         return true;
       } else {
-        throw Exception("Server returned status: ${response.statusCode}");
+        throw Exception(response.data['error'] ?? 'Registration failed');
       }
-    } on DioException catch (e) {
-      // 🚨 اصطياد أخطاء الـ Dio بذكاء (مثل انقطاع الإنترنت أو السيرفر مغلق)
-      // print("❌ Dio Error: ${e.response?.data ?? e.message}");
-      _isLoading = false;
-      // محاولة عرض رسالة الخطأ القادمة من الـ Node.js إن وجدت
-      _errorMessage =
-          e.response?.data['message'] ??
-          "Failed to connect to the server. Check your internet.";
-      notifyListeners();
-      return false;
     } catch (e) {
-      // أخطاء برمجية أخرى
-      // print("❌ General Error: $e");
       _isLoading = false;
-      _errorMessage = "Something went wrong processing your data.";
+      _errorMessage = e.toString();
       notifyListeners();
       return false;
     }

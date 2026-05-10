@@ -12,6 +12,7 @@ class HealthMetricCard extends StatelessWidget {
   final IconData? statusIcon;
   final Color statusColor;
   final bool isZoomed;
+  final String? customAdvice;
 
   const HealthMetricCard({
     super.key,
@@ -25,12 +26,14 @@ class HealthMetricCard extends StatelessWidget {
     this.statusIcon,
     required this.statusColor,
     this.isZoomed = false,
+    this.customAdvice,
   });
 
   // ==========================================
   // 🔥 دالة الذكاء الطبي: تحليل الأرقام وإعطاء النصيحة
   // ==========================================
   String _getMedicalAdvice() {
+    if (customAdvice != null) return customAdvice!;
     try {
       final lowerTitle = title.toLowerCase();
 
@@ -120,15 +123,29 @@ class HealthMetricCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.grey[800]! : iconBgColor.withValues(alpha: 0.6),
-          width: 1,
+          color: isDark
+              ? iconColor.withValues(
+                  alpha: 0.25,
+                ) // إطار بلمحة من لون الأيقونة في الوضع الليلي
+              : iconColor.withValues(
+                  alpha: 0.2,
+                ), // إطار ملون وأنيق في الوضع النهاري
+          width: 1.5, // زيادة سمك الإطار ليكون أكثر وضوحاً
         ),
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: iconBgColor.withValues(alpha: isZoomed ? 0.3 : 0.15),
-              blurRadius: isZoomed ? 25 : 10,
-              offset: Offset(0, isZoomed ? 12 : 4),
+              color: iconColor.withValues(
+                alpha: isZoomed ? 0.2 : 0.08,
+              ), // ظل ملون خفيف يعطي إيحاء بالبروز
+              blurRadius: isZoomed ? 25 : 12,
+              offset: Offset(0, isZoomed ? 12 : 6),
+            ),
+          if (isDark && isZoomed)
+            BoxShadow(
+              color: iconColor.withValues(alpha: 0.15),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
             ),
         ],
       ),
@@ -138,7 +155,7 @@ class HealthMetricCard extends StatelessWidget {
         children: [
           // الهيدر (الأيقونة)
           Row(
-            mainAxisAlignment: .spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 padding: EdgeInsets.all(isZoomed ? 12 : 6),
@@ -150,30 +167,36 @@ class HealthMetricCard extends StatelessWidget {
               ),
 
               // الرقم والوحدة
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: isZoomed ? 40 : 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  if (unit.isNotEmpty) ...[
-                    const SizedBox(width: 4),
-                    Text(
-                      unit,
-                      style: TextStyle(
-                        fontSize: isZoomed ? 18 : 12,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: isZoomed ? 40 : 22,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
                       ),
-                    ),
-                  ],
-                ],
+                      if (unit.isNotEmpty) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          unit,
+                          style: TextStyle(
+                            fontSize: isZoomed ? 18 : 12,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -195,12 +218,16 @@ class HealthMetricCard extends StatelessWidget {
                 Icon(statusIcon, size: isZoomed ? 18 : 12, color: statusColor),
                 const SizedBox(width: 4),
               ],
-              Text(
-                status,
-                style: TextStyle(
-                  fontSize: isZoomed ? 16 : 12,
-                  color: statusColor,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    fontSize: isZoomed ? 16 : 12,
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: isZoomed ? 3 : 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -235,9 +262,13 @@ class HealthMetricCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: isDark ? Colors.grey[850] : const Color(0xFFF3F4F6), // خلفية رمادية فاتحة مريحة للعين
+                color: isDark
+                    ? Colors.grey[850]
+                    : const Color(0xFFF3F4F6), // خلفية رمادية فاتحة مريحة للعين
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? Colors.grey[700]! : const Color(0xFFE5E7EB)),
+                border: Border.all(
+                  color: isDark ? Colors.grey[700]! : const Color(0xFFE5E7EB),
+                ),
               ),
               child: Text(
                 _getMedicalAdvice(), // استدعاء الدالة الذكية
@@ -262,18 +293,18 @@ class HealthMetricCard extends StatelessWidget {
       ), // تعتيم أقوى قليلاً للتركيز
       barrierDismissible: true,
       barrierLabel: "Close",
-      transitionDuration: const Duration(milliseconds: 400),
+      transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) => const SizedBox(),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
           parent: animation,
-          curve: Curves.easeOutBack,
+          curve: Curves.easeOut,
         );
 
         return BackdropFilter(
           filter: ImageFilter.blur(
-            sigmaX: 12 * animation.value,
-            sigmaY: 12 * animation.value,
+            sigmaX: 8 * animation.value,
+            sigmaY: 8 * animation.value,
           ),
           child: FadeTransition(
             opacity: animation,

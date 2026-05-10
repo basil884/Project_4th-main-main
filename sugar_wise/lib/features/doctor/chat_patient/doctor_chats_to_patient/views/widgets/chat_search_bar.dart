@@ -8,7 +8,7 @@ class ChatSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<PatientChatsViewModel>(
+    final viewModel = Provider.of<DoctorChatsViewModel>(
       context,
       listen: false,
     );

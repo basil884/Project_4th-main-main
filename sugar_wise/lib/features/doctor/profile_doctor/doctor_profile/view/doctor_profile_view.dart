@@ -7,6 +7,7 @@ import 'package:sugar_wise/features/doctor/doctor_home/ViewModel/home_view_model
 import 'package:sugar_wise/features/doctor/profile_doctor/doctor_profile/view_model/doctor_profile_view_model.dart';
 import 'package:sugar_wise/features/doctor/profile_doctor/edit_doctor_profile/view/edit_doctor_profile_view.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 
 class DoctorProfileView extends StatelessWidget {
   const DoctorProfileView({super.key});
@@ -23,11 +24,13 @@ class _DoctorProfileBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DoctorProfileViewModel>(context);
+    final userProvider = Provider.of<UserProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textMain;
-    final textSecondary = isDark
-        ? AppColors.darkTextSecondary
-        : AppColors.lightTextSecondary;
+
+    // 🔥 مزامنة البيانات الحقيقية فوراً
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      viewModel.syncWithUserProvider(userProvider.userData);
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -44,7 +47,10 @@ class _DoctorProfileBody extends StatelessWidget {
           child: Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
         centerTitle: true,
-        title: Text("profile_title".tr(), style: const TextStyle(color: Colors.white)),
+        title: Text(
+          "profile_title".tr(),
+          style: const TextStyle(color: Colors.white),
+        ),
       ),
       backgroundColor: isDark
           ? AppColors.darkBackground
@@ -69,7 +75,7 @@ class _DoctorProfileBody extends StatelessWidget {
               child: Column(
                 children: [
                   // بطاقة الملف الشخصي الرئيسية
-                  _buildProfileCard(context, viewModel, isDark),
+                  _buildProfileCard(context, viewModel, userProvider, isDark),
                   const SizedBox(height: 20),
 
                   // بطاقات الإحصائيات (Patients, Experience, Rating)
@@ -143,6 +149,7 @@ class _DoctorProfileBody extends StatelessWidget {
   Widget _buildProfileCard(
     BuildContext context,
     DoctorProfileViewModel viewModel,
+    UserProvider userProvider,
     bool isDark,
   ) {
     return Container(
@@ -167,11 +174,45 @@ class _DoctorProfileBody extends StatelessWidget {
           Stack(
             alignment: Alignment.bottomRight,
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 40,
-                backgroundImage: NetworkImage(
-                  "https://i.pravatar.cc/150?img=11",
-                ), // ضع رابط صورة حقيقي هنا
+                backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                backgroundImage: () {
+                  final userData = userProvider.userData;
+                  final doctorData = userData?['doctor'];
+                  final hasDoctorMap = doctorData is Map<String, dynamic>;
+
+                  final profileImg = hasDoctorMap
+                      ? doctorData['profileImage']
+                      : null;
+                  final userImg = userData?['image'];
+
+                  if (profileImg != null || userImg != null) {
+                    return NetworkImage(
+                      "http://192.168.1.7:5000/uploads/${profileImg ?? userImg}",
+                    );
+                  }
+                  return const AssetImage("assets/images/default_doctor.png")
+                      as ImageProvider;
+                }(),
+                child: () {
+                  final userData = userProvider.userData;
+                  final doctorData = userData?['doctor'];
+                  final hasDoctorMap = doctorData is Map<String, dynamic>;
+                  final profileImg = hasDoctorMap
+                      ? doctorData['profileImage']
+                      : null;
+                  final userImg = userData?['image'];
+
+                  if (profileImg == null && userImg == null) {
+                    return const Icon(
+                      Icons.person,
+                      size: 40,
+                      color: AppColors.primaryBlue,
+                    );
+                  }
+                  return null;
+                }(),
               ),
               Container(
                 width: 18,
@@ -189,7 +230,7 @@ class _DoctorProfileBody extends StatelessWidget {
           ),
           const SizedBox(height: 15),
           Text(
-            viewModel.doctorName,
+            "Dr. ${viewModel.doctorName}",
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -222,7 +263,9 @@ class _DoctorProfileBody extends StatelessWidget {
                 ),
               ),
               Text(
-                "reviews_count_text".tr(args: [viewModel.reviewsCount.toString()]),
+                "reviews_count_text".tr(
+                  args: [viewModel.reviewsCount.toString()],
+                ),
                 style: TextStyle(
                   color: isDark ? AppColors.darkTextSecondary : Colors.grey,
                 ),
@@ -385,7 +428,7 @@ class _DoctorProfileBody extends StatelessWidget {
   ) {
     switch (viewModel.selectedTabIndex) {
       case 0:
-        return _buildOverviewContent(viewModel, isDark);
+        return _buildOverviewContent(context, viewModel, isDark);
       case 1:
         return _buildReviewsContent(viewModel, isDark);
       case 2:
@@ -400,12 +443,17 @@ class _DoctorProfileBody extends StatelessWidget {
   }
 
   // محتوى تبويب Overview المطابق للصورة
-  Widget _buildOverviewContent(DoctorProfileViewModel viewModel, bool isDark) {
+  Widget _buildOverviewContent(
+    BuildContext context,
+    DoctorProfileViewModel viewModel,
+    bool isDark,
+  ) {
+    final nameOnly = viewModel.doctorName.split(" ").last;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "about_doctor".tr(args: [viewModel.doctorName.split(" ").last]),
+          "about_doctor".tr(args: [nameOnly]),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -483,7 +531,7 @@ class _DoctorProfileBody extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "MBBS, MD in Cardiology",
+                    "Professional Qualification",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
@@ -493,7 +541,7 @@ class _DoctorProfileBody extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Cairo University Faculty of Medicine",
+                    viewModel.university,
                     style: TextStyle(
                       color: isDark ? AppColors.darkTextSecondary : Colors.grey,
                       fontSize: 13,
@@ -550,7 +598,9 @@ Widget _buildReviewsContent(DoctorProfileViewModel viewModel, bool isDark) {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            "patient_reviews_count".tr(args: [viewModel.reviewsCount.toString()]),
+            "patient_reviews_count".tr(
+              args: [viewModel.reviewsCount.toString()],
+            ),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -883,7 +933,9 @@ Widget _buildClinicCard(ClinicModel clinic, bool isDark) {
                     child: Icon(
                       Icons.map_outlined,
                       size: 50,
-                      color: isDark ? AppColors.darkTextSecondary : Colors.white54,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : Colors.white54,
                     ),
                   ),
                   "https://media.wired.com/photos/59269cd37034dc5f91bec0f1/master/pass/GoogleMapTA.jpg",

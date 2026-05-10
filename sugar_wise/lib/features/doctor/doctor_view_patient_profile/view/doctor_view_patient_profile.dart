@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/patient/patient_profile/models/patient_profile_model.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
 import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/models/chat_thread_model.dart';
 import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/views/chat_view.dart';
 import 'package:sugar_wise/features/doctor/doctor_details/models/doctor_details_model.dart';
-import 'package:sugar_wise/features/patient/notfications_patient/notfication/model/notification_model.dart';
-import 'package:sugar_wise/features/patient/notfications_patient/notfication/view_model/notifications_view_model.dart';
+import 'package:sugar_wise/features/doctor/my_patient_to_doctor/my_patients_view_model/my_patients_view_model.dart';
+import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/view_models/doctor_chats_view_model.dart';
 
 class DoctorViewPatientProfile extends StatelessWidget {
   final PatientProfileModel patientData;
@@ -93,7 +96,7 @@ class DoctorViewPatientProfile extends StatelessWidget {
                           ? Colors.white10
                           : Colors.grey[200],
                       backgroundImage: NetworkImage(patientData.imageUrl),
-                      onBackgroundImageError: (_, __) => const Icon(
+                      onBackgroundImageError: (_, _) => const Icon(
                         Icons.person,
                         size: 30,
                         color: Colors.grey,
@@ -289,43 +292,116 @@ class DoctorViewPatientProfile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          // Navigate to Chat
-                          final parsedAge =
-                              int.tryParse(
-                                patientData.age.replaceAll(
-                                  RegExp(r'[^0-9]'),
-                                  '',
-                                ),
-                              ) ??
-                              0;
-                          final dummyDoctorDetails = DoctorDetailsModel(
-                            name: patientData.name,
-                            specialty: patientData.primaryCondition,
-                            jobTitle: "Patient",
-                            age: parsedAge,
-                            imagePath: "",
-                            rating: 0.0,
-                            reviewsCount: 0,
-                            experienceYears: 0,
-                            patientsCount: "0",
-                            biography: "Patient details",
-                            clinics: [],
-                          );
-                          final chatThread = ChatThreadModel(
-                            doctorId: patientData.patientId,
-                            doctorName: patientData.name,
-                            doctorImage: "",
-                            lastMessage: "Hello ${patientData.name}",
-                            realDoctorDetails: dummyDoctorDetails,
-                          );
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatView(chat: chatThread),
+                        onPressed: () async {
+                          // إظهار مؤشر تحميل (اختياري)
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (_) => const Center(
+                              child: CircularProgressIndicator(),
                             ),
                           );
+
+                          final userProvider = Provider.of<UserProvider>(
+                            context,
+                            listen: false,
+                          );
+                          final doctorId = userProvider.baseUserId;
+                          final patientId = patientData.dbId;
+
+                          try {
+                            // 1. طلب الغرفة الحقيقية من السيرفر
+                            final response = await ApiClient.postData(
+                              endpoint: 'messages/chats/direct',
+                              data: {'userId1': doctorId, 'userId2': patientId},
+                              token: userProvider.token,
+                            );
+
+                            // إخفاء مؤشر التحميل
+                            if (context.mounted) Navigator.pop(context);
+
+                            if (response.statusCode == 200 ||
+                                response.statusCode == 201) {
+                              final chatData = response.data['data'];
+                              final String realChatId = chatData['_id'] ?? '';
+
+                              final realPatientDetails = DoctorDetailsModel(
+                                id: patientData.patientId, // الـ ID المرئي
+                                name: patientData.name,
+                                specialty: 'Patient',
+                                jobTitle: patientData
+                                    .primaryCondition, // استخدام حالة المريض كبديل
+                                age:
+                                    int.tryParse(
+                                      patientData.age.replaceAll(
+                                        RegExp(r'[^0-9]'),
+                                        '',
+                                      ),
+                                    ) ??
+                                    0,
+                                imagePath: patientData.imageUrl,
+                                biography: patientData.address,
+                                patientsCount: '0',
+                                experienceYears: 0,
+                                rating: 0.0,
+                                reviewsCount: 0,
+                                clinics: [],
+                                reviews: [],
+                              );
+
+                              if (!context.mounted) return;
+                              final doctorChatsViewModel =
+                                  Provider.of<DoctorChatsViewModel>(
+                                    context,
+                                    listen: false,
+                                  );
+
+                              doctorChatsViewModel.addPatientToChats(
+                                chatId: realChatId,
+                                patientName: patientData.name,
+                                patientImage: patientData.imageUrl,
+                                lastMessage: "Open chat to see messages",
+                                patientDetails: realPatientDetails,
+                              );
+
+                              final chatThread = ChatThreadModel(
+                                chatId: realChatId,
+                                doctorId: patientId,
+                                doctorName: patientData.name,
+                                doctorImage: patientData.imageUrl,
+                                lastMessage: "Open chat to see messages",
+                                realDoctorDetails: realPatientDetails,
+                              );
+
+                              if (context.mounted) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ChatView(chat: chatThread),
+                                  ),
+                                );
+                              }
+                            } else {
+                              throw Exception(
+                                'Failed to get chat room. Status: ${response.statusCode}',
+                              );
+                            }
+                          } catch (e, stacktrace) {
+                            debugPrint(
+                              '❌ Error in message button: $e\n$stacktrace',
+                            );
+                            if (context.mounted) {
+                              Navigator.pop(
+                                context,
+                              ); // إخفاء مؤشر التحميل في حال الخطأ
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to start chat: $e'),
+                                ),
+                              );
+                            }
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF8BC34A), // Green
@@ -354,6 +430,7 @@ class DoctorViewPatientProfile extends StatelessWidget {
                             context: context,
                             builder: (context) => _SendFeedbackDialog(
                               patientName: patientData.name,
+                              patientId: patientData.dbId,
                             ),
                           );
                         },
@@ -481,8 +558,12 @@ class DoctorViewPatientProfile extends StatelessWidget {
 
 class _SendFeedbackDialog extends StatefulWidget {
   final String patientName;
+  final String patientId;
 
-  const _SendFeedbackDialog({required this.patientName});
+  const _SendFeedbackDialog({
+    required this.patientName,
+    required this.patientId,
+  });
 
   @override
   State<_SendFeedbackDialog> createState() => _SendFeedbackDialogState();
@@ -504,31 +585,59 @@ class _SendFeedbackDialogState extends State<_SendFeedbackDialog> {
     super.dispose();
   }
 
-  void _sendFeedback() {
+  void _sendFeedback() async {
     if (_feedbackController.text.trim().isEmpty) return;
 
-    // Create a new notification for the patient
-    final newNotification = NotificationModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: "Feedback from your Doctor",
-      subtitle: _feedbackController.text.trim(),
-      time: "Just now",
-      icon: Icons.feedback_outlined,
-      iconColor: const Color(0xFF3598DB),
-      bgColor: const Color(0xFF3598DB).withValues(alpha: 0.1),
-      isRead: false,
-    );
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    bool success = false;
 
-    // Add to the ViewModel (using a temporary instance since list is static)
-    NotificationsViewModel().addNotification(newNotification);
+    try {
+      // 1. محاولة استخدام الـ Provider إذا كان متاحاً في المسار (عند الدخول من قائمة المرضى)
+      try {
+        final myPatientsVM = Provider.of<MyPatientsViewModel>(
+          context,
+          listen: false,
+        );
+        success = await myPatientsVM.sendFeedback(
+          widget.patientId,
+          _feedbackController.text.trim(),
+          senderName: userProvider.name,
+        );
+      } catch (_) {
+        // 2. البديل (Fallback) إذا لم يكن الـ Provider متاحاً (عند الدخول من المحادثات)
+        final response = await ApiClient.postData(
+          endpoint: 'notifications/send',
+          data: {
+            'patientId': widget.patientId,
+            'message': _feedbackController.text.trim(),
+            'type': 'doctor_feedback',
+            'title': 'New Feedback from Doctor',
+            'senderName': userProvider.name,
+          },
+          token: userProvider.token,
+        );
+        success = (response.statusCode == 200 || response.statusCode == 201);
+      }
 
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("feedback_sent_msg".tr()),
-        backgroundColor: Colors.green,
-      ),
-    );
+      if (success && mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("feedback_sent_msg".tr()),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Failed to send feedback."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error sending feedback: $e");
+    }
   }
 
   @override

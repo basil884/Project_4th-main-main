@@ -1,87 +1,114 @@
 import 'package:flutter/material.dart';
 import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/models/chat_thread_model.dart';
 import 'package:sugar_wise/features/doctor/doctor_details/models/doctor_details_model.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
 
-class PatientChatsViewModel extends ChangeNotifier {
+class DoctorChatsViewModel extends ChangeNotifier {
   // 1. القائمة تبدأ فارغة تماماً
   final List<ChatThreadModel> _allChats = [];
   List<ChatThreadModel> _filteredChats = [];
 
   List<ChatThreadModel> get filteredChats => _filteredChats;
 
-  PatientChatsViewModel() {
-    // 🔥 إضافة مرضى تجريبيين عند البداية لتظهر الشاشة ممتلئة
-    _allChats.addAll([
-      ChatThreadModel(
-        doctorId: "1",
-        doctorName: "Samir Mahmoud",
-        doctorImage: "", // يمكنك وضع مسارات الصور هنا
-        lastMessage: "How is my glucose level today?",
-        realDoctorDetails: DoctorDetailsModel(
-          name: "Samir Mahmoud",
-          specialty: "Diabetic",
-          jobTitle: "Patient",
-          age: 55,
-          imagePath: "",
-          rating: 4.2,
-          reviewsCount: 10,
-          experienceYears: 0,
-          patientsCount: "0",
-          biography: "",
-          clinics: [],
-        ),
-      ),
-      ChatThreadModel(
-        doctorId: "2",
-        doctorName: "Mona Ali",
-        doctorImage: "",
-        lastMessage: "I finished the medicine.",
-        realDoctorDetails: DoctorDetailsModel(
-          name: "Mona Ali",
-          specialty: "Gestational Diabetes",
-          jobTitle: "Patient",
-          age: 42,
-          imagePath: "",
-          rating: 4.9,
-          reviewsCount: 5,
-          experienceYears: 0,
-          patientsCount: "0",
-          biography: "",
-          clinics: [],
-        ),
-      ),
-    ]);
+  bool isLoading = false;
+  
+  DoctorChatsViewModel() {
     _filteredChats = _allChats;
   }
 
-  // 2. دالة لاستقبال وإضافة الطبيب عند الضغط على (متابعة / مراسلة)
-  // تأكد من استدعاء موديل تفاصيل الدكتور في الأعلى
+  // جلب المحادثات من السيرفر
+  Future<void> fetchChats(String userId, {String? token}) async {
+    isLoading = true;
+    notifyListeners();
 
-  // دالة لاستقبال وإضافة مريض إلى قائمة المحادثات
+    try {
+      final response = await ApiClient.getData(
+        endpoint: 'messages/chats?userId=$userId',
+        token: token,
+      );
+
+      if (response.statusCode == 200) {
+        final List data = response.data['data'] ?? [];
+        _allChats.clear();
+
+        for (var json in data) {
+          // استخراج بيانات الطرف الآخر (المتحدث معه)
+          final participants = json['participants'] as List;
+          final opponent = participants.firstWhere(
+            (p) => p['_id'].toString() != userId.toString(),
+            orElse: () => participants[0],
+          );
+
+          final lastMsg = json['lastMessage'] != null 
+              ? json['lastMessage']['messageText'] 
+              : "No messages yet";
+
+          final dummyDetails = DoctorDetailsModel(
+            id: opponent['_id'],
+            name: opponent['name'] ?? 'User',
+            specialty: opponent['role'] ?? '',
+            jobTitle: opponent['role'] ?? '',
+            age: 0,
+            imagePath: opponent['image'] ?? '',
+            biography: '',
+            patientsCount: '0',
+            experienceYears: 0,
+            rating: 0.0,
+            reviewsCount: 0,
+            clinics: [],
+            reviews: [],
+          );
+
+          _allChats.add(
+            ChatThreadModel(
+              chatId: json['_id'],
+              doctorId: opponent['_id'],
+              doctorName: opponent['name'] ?? 'User',
+              doctorImage: opponent['image'] != null && opponent['image'].toString().isNotEmpty 
+                  ? 'http://192.168.1.7:5000${opponent['image']}' 
+                  : '',
+              lastMessage: lastMsg,
+              realDoctorDetails: dummyDetails,
+            ),
+          );
+        }
+        _filteredChats = _allChats;
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching chats: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // دالة لاستقبال وإضافة مريض إلى قائمة المحادثات (محلية)
   void addPatientToChats({
+    required String chatId,
     required String patientName,
     required String patientImage,
     required String lastMessage,
-    required DoctorDetailsModel
-    patientDetails,
+    required DoctorDetailsModel patientDetails,
   }) {
-    final exists = _allChats.any((chat) => chat.doctorName == patientName);
+    final exists = _allChats.any((chat) => chat.chatId == chatId);
 
     if (!exists) {
       _allChats.add(
         ChatThreadModel(
-          doctorId: DateTime.now().toString(),
+          chatId: chatId,
+          doctorId: patientDetails.id,
           doctorName: patientName,
-          doctorImage: patientImage,
+          doctorImage: patientImage.isNotEmpty && !patientImage.startsWith('http')
+              ? 'http://192.168.1.7:5000$patientImage'
+              : patientImage,
           lastMessage: lastMessage,
-          realDoctorDetails:
-              patientDetails,
+          realDoctorDetails: patientDetails,
         ),
       );
       _filteredChats = _allChats;
       notifyListeners();
     }
-  } // دالة البحث كما هي
+  }
 
   void searchChats(String query) {
     if (query.isEmpty) {

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
+import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/view_models/doctor_chats_view_model.dart';
 import 'package:sugar_wise/features/doctor/doctor_view_patient_profile/view/doctor_view_patient_profile.dart';
 import 'package:sugar_wise/features/patient/patient_profile/models/patient_profile_model.dart';
 import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/models/chat_thread_model.dart';
 import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/views/chat_view.dart';
 import 'package:sugar_wise/features/doctor/doctor_details/models/doctor_details_model.dart';
-import 'package:sugar_wise/features/doctor/chat_patient/doctor_chats_to_patient/views/doctor_chats_view.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
 
 class AllPatientsView extends StatefulWidget {
   final List<PatientProfileModel> patients;
@@ -225,7 +228,7 @@ class _AllPatientsViewState extends State<AllPatientsView> {
                 radius: 20,
                 backgroundColor: Colors.grey[200],
                 backgroundImage: NetworkImage(patient.imageUrl),
-                onBackgroundImageError: (_, __) => const Icon(Icons.person),
+                onBackgroundImageError: (_, _) => const Icon(Icons.person),
               ),
               const SizedBox(width: 8),
               // التفاصيل
@@ -321,7 +324,7 @@ class _AllPatientsViewState extends State<AllPatientsView> {
               const SizedBox(width: 8),
               // زر Chat
               GestureDetector(
-                onTap: () {
+                onTap: () async {
                   // استخراج العمر كرقم أو وضع 0 افتراضياً
                   final parsedAge =
                       int.tryParse(
@@ -332,6 +335,7 @@ class _AllPatientsViewState extends State<AllPatientsView> {
                   // بناء موديل وهمي لتفاصيل الدكتور لتمريره إلى ChatThreadModel
                   // ملاحظة: الشاشة الحالية تستخدم DoctorDetailsModel و AssetImage للمسار
                   final dummyDoctorDetails = DoctorDetailsModel(
+                    id: patient.patientId,
                     name: patient.name,
                     specialty: patient.primaryCondition,
                     jobTitle: "Patient",
@@ -346,28 +350,69 @@ class _AllPatientsViewState extends State<AllPatientsView> {
                     clinics: [],
                   );
 
-                  final chatThread = ChatThreadModel(
-                    doctorId: patient.patientId,
-                    doctorName: patient.name,
-                    doctorImage: "",
-                    lastMessage: "Hello ${patient.name}",
-                    realDoctorDetails: dummyDoctorDetails,
-                  );
-
-                  // 🔥 إضافة المريض لقائمة الشات الأساسية لكي يظهر هناك دائماً
-                  patientChatsViewModel.addPatientToChats(
-                    patientName: patient.name,
-                    patientImage: "",
-                    lastMessage: "Hello ${patient.name}",
-                    patientDetails: dummyDoctorDetails,
-                  );
-
-                  Navigator.push(
+                  final userProvider = Provider.of<UserProvider>(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatView(chat: chatThread),
-                    ),
+                    listen: false,
                   );
+                  
+                  // 1. Show loading
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => const Center(child: CircularProgressIndicator()),
+                  );
+
+                  try {
+                    // 2. Get or Create Chat on Server
+                    final response = await ApiClient.postData(
+                      endpoint: 'messages/chats/direct',
+                      data: {
+                        'userId1': userProvider.baseUserId,
+                        'userId2': patient.dbId, // Using patient's real DB ID
+                      },
+                      token: userProvider.token,
+                    );
+
+                    if (context.mounted) Navigator.pop(context); // Hide loading
+
+                    if (response.statusCode == 200 || response.statusCode == 201) {
+                      final chatData = response.data['data'];
+                      final realChatId = chatData['_id'];
+
+                      final chatThread = ChatThreadModel(
+                        chatId: realChatId,
+                        doctorId: patient.dbId,
+                        doctorName: patient.name,
+                        doctorImage: patient.imageUrl,
+                        lastMessage: "Start chatting with ${patient.name}",
+                        realDoctorDetails: dummyDoctorDetails,
+                      );
+
+                      if (!context.mounted) return;
+                      final doctorChatsViewModel =
+                          Provider.of<DoctorChatsViewModel>(context, listen: false);
+
+                      doctorChatsViewModel.addPatientToChats(
+                        chatId: realChatId,
+                        patientName: patient.name,
+                        patientImage: patient.imageUrl,
+                        lastMessage: "Start chatting...",
+                        patientDetails: dummyDoctorDetails,
+                      );
+
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatView(chat: chatThread),
+                          ),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    if (context.mounted) Navigator.pop(context);
+                    debugPrint("❌ Error starting chat: $e");
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -480,7 +525,8 @@ class _AddPatientDialogState extends State<_AddPatientDialog> {
                       separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {
                         final patient = filteredPatients[index];
-                        final ageText = patient.age.toLowerCase().contains('year')
+                        final ageText =
+                            patient.age.toLowerCase().contains('year')
                             ? patient.age
                             : "age_desc".tr(args: [patient.age]);
 
@@ -489,7 +535,7 @@ class _AddPatientDialogState extends State<_AddPatientDialog> {
                           leading: CircleAvatar(
                             backgroundColor: Colors.grey[200],
                             backgroundImage: NetworkImage(patient.imageUrl),
-                            onBackgroundImageError: (_, __) =>
+                            onBackgroundImageError: (_, _) =>
                                 const Icon(Icons.person),
                           ),
                           title: Text(

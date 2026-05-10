@@ -4,6 +4,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
+import 'package:sugar_wise/core/api/api_client.dart';
 
 class SugarReading {
   final String date;
@@ -192,14 +193,14 @@ class MonitoringViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void saveLog({
+  Future<void> saveLog({
     required int glucoseValue,
     required String unit,
     required String date,
     required String time,
     required String meal,
     String? insulin,
-  }) {
+  }) async {
     String status = glucoseValue > 110
         ? "High"
         : (glucoseValue < 70 ? "Low" : "Normal");
@@ -207,6 +208,7 @@ class MonitoringViewModel extends ChangeNotifier {
         ? const Color(0xFFDC2626)
         : (glucoseValue < 70 ? Colors.red : const Color(0xFF10B981));
 
+    // 1. إضافة البيانات محلياً أولاً لسرعة الاستجابة في الواجهة
     _recentReadings.insert(
       0,
       SugarReading(
@@ -220,6 +222,26 @@ class MonitoringViewModel extends ChangeNotifier {
       ),
     );
     notifyListeners();
+
+    // 2. إرسال البيانات للسيرفر ليتم تخزينها في MongoDB
+    try {
+      await ApiClient.postData(
+        endpoint: 'diabetes-monitoring',
+        data: {
+          "level": glucoseValue,
+          "unit": unit,
+          "date": date,
+          "time": time,
+          "mealType": meal,
+          "insulin": insulin,
+          "notes": "Added from mobile app"
+        },
+      );
+      debugPrint("✅ Reading saved to MongoDB successfully!");
+    } catch (e) {
+      debugPrint("❌ Failed to save reading to MongoDB: $e");
+      // يمكنك هنا إضافة منطق للتعامل مع الفشل (مثل إعادة المحاولة أو حفظها محلياً)
+    }
   }
 
   // 🔥 السحر هنا: توليد وعرض ملف الـ PDF الحقيقي

@@ -51,14 +51,6 @@ class SetNewPasswordViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 🔥 1. تجهيز الـ JSON للـ Node.js
-      // final payload = {"email": email, "otp": otp, "newPassword": newPassword};
-
-      // print("🚀====== NODE.JS PAYLOAD (STEP 3: RESET PASSWORD) ======🚀");
-      // print(jsonEncode(payload));
-      // print("🚀========================================================🚀");
-
-      // final response = await _dio.post("https://your-api.com/api/auth/reset-password", data: payload);
       await Future.delayed(const Duration(seconds: 2));
 
       _isLoading = false;

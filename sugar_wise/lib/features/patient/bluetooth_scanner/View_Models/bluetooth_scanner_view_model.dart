@@ -43,6 +43,19 @@ class BleDeviceModel {
 
 class BluetoothScannerViewModel extends ChangeNotifier {
   bool isScanning = false;
+  
+  // 🔥 تم تحويله لـ Getter ذكي يتحقق من الحالة الحقيقية في كل لحظة
+  bool get isConnectedToDevice {
+    // 1. التحقق من القائمة المحلية
+    if (devices.any((d) => d.isConnected)) return true;
+    // 2. التحقق من النظام مباشرة (أكثر دقة)
+    try {
+      return FlutterBluePlus.connectedDevices.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   int currentHeartRate = 0; // 🔥 متغير لتخزين نبض القلب الحي
   // 🔥 المتغيرات الجديدة
   int currentSystolic = 0; // الضغط الانقباضي (الرقم الكبير)
@@ -53,6 +66,36 @@ class BluetoothScannerViewModel extends ChangeNotifier {
   List<BleDeviceModel> devices = [];
   StreamSubscription<List<ScanResult>>? _scanSubscription;
   StreamSubscription<bool>? _isScanningSubscription;
+
+  BluetoothScannerViewModel() {
+    // 🔥 عند تشغيل التطبيق، تحقق فوراً إذا كان هناك جهاز متصل مسبقاً
+    _updateConnectionStatus();
+  }
+
+  // 🔥 دالة ذكية للتحقق من الأجهزة المتصلة بالنظام حالياً
+  Future<void> _updateConnectionStatus() async {
+    try {
+      List<BluetoothDevice> connected = FlutterBluePlus.connectedDevices;
+      if (connected.isNotEmpty) {
+        // إذا كان الجهاز متصل، تأكد من وجوده في القائمة لكي يظهر في شاشة الربط أيضاً
+        for (var d in connected) {
+          if (!devices.any((dm) => dm.device.remoteId == d.remoteId)) {
+            devices.add(BleDeviceModel(
+              device: d,
+              name: d.platformName.isEmpty ? "Sensor" : d.platformName,
+              rssi: -50,
+              isConnected: true,
+            ));
+          }
+        }
+      } else {
+        // لا حاجة للتعيين اليدوي هنا لأن الـ Getter يتكفل بالتحقق من القائمة المحلية
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error checking connections: $e");
+    }
+  }
 
   Future<void> startScanning(BuildContext context) async {
     // 💡 حماية إضافية: لا تقم ببدء بحث جديد إذا كان الرادار يعمل بالفعل
@@ -127,7 +170,9 @@ class BluetoothScannerViewModel extends ChangeNotifier {
     }
 
     isScanning = true;
-    devices.clear();
+    // لا نمسح الأجهزة المتصلة من القائمة لكي لا نفقد حالتها في الـ UI
+    devices.removeWhere((d) => !d.isConnected);
+    _updateConnectionStatus(); // تحديث الحالة
     notifyListeners();
 
     try {
