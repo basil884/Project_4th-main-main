@@ -7,7 +7,7 @@ class SocketService {
   SocketService._internal();
 
   io.Socket? socket;
-  final String serverUrl = "http://192.168.1.7:5000";
+  final String serverUrl = "https://sugarwiseworld.com";
 
   void connect(String userId) {
     if (socket != null && socket!.connected) return;

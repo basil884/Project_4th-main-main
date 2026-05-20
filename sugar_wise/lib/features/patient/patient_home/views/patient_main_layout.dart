@@ -60,7 +60,13 @@ class _PatientMainLayoutState extends State<PatientMainLayout> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ChangeNotifierProvider(
-      create: (_) => DashboardViewModel(),
+      create: (ctx) {
+        // ✅ نجلب الـ token من UserProvider ونبدأ fetchDoctors فوراً
+        final token = Provider.of<UserProvider>(ctx, listen: false).token;
+        final vm = DashboardViewModel();
+        vm.fetchDoctors(token: token);
+        return vm;
+      },
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

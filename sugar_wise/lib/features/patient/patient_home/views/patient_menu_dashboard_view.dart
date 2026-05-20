@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:sugar_wise/core/theme/app_colors.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
@@ -118,7 +119,7 @@ class PatientMenuDashboardView extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
               Text(
-                "القائمة",
+                "القائمة".tr(),
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

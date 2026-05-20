@@ -189,7 +189,7 @@ class _DoctorProfileBody extends StatelessWidget {
 
                   if (profileImg != null || userImg != null) {
                     return NetworkImage(
-                      "http://192.168.1.7:5000/uploads/${profileImg ?? userImg}",
+                      "https://sugarwiseworld.com/uploads/${profileImg ?? userImg}",
                     );
                   }
                   return const AssetImage("assets/images/default_doctor.png")

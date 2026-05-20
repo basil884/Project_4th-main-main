@@ -65,7 +65,7 @@ class DoctorChatsViewModel extends ChangeNotifier {
               doctorId: opponent['_id'],
               doctorName: opponent['name'] ?? 'User',
               doctorImage: opponent['image'] != null && opponent['image'].toString().isNotEmpty 
-                  ? 'http://192.168.1.7:5000${opponent['image']}' 
+                  ? 'https://sugarwiseworld.com${opponent['image']}' 
                   : '',
               lastMessage: lastMsg,
               realDoctorDetails: dummyDetails,
@@ -99,7 +99,7 @@ class DoctorChatsViewModel extends ChangeNotifier {
           doctorId: patientDetails.id,
           doctorName: patientName,
           doctorImage: patientImage.isNotEmpty && !patientImage.startsWith('http')
-              ? 'http://192.168.1.7:5000$patientImage'
+              ? 'https://sugarwiseworld.com$patientImage'
               : patientImage,
           lastMessage: lastMessage,
           realDoctorDetails: patientDetails,

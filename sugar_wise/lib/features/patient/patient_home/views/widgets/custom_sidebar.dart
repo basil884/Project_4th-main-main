@@ -1,4 +1,7 @@
+import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sugar_wise/core/services/zego_call_service.dart';
 import 'package:sugar_wise/features/auth/signin/views/login_view.dart';
 import 'package:sugar_wise/features/doctor/doctor_home/view/widgets/about_us_view.dart';
@@ -25,12 +28,16 @@ import 'package:sugar_wise/features/patient/patient_profile/view_models/profile_
 import 'package:sugar_wise/features/patient/seetings/setting_screen.dart';
 
 class CustomSidebar extends StatelessWidget {
-  CustomSidebar({super.key});
-  final ProfileViewModel profileViewModel = ProfileViewModel();
+  const CustomSidebar({super.key});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final viewModel = Provider.of<ProfileViewModel>(context);
+    final patient = viewModel.patientData;
+    final safeImageUrl = patient.imageUrl.trim();
+    final hasImage = safeImageUrl.isNotEmpty && safeImageUrl != 'null';
+
     // عرض 75% من الشاشة كما طلبنا في التصميم الأول
     final screenWidth = MediaQuery.of(context).size.width;
     const Color primaryTeal = Color(
@@ -82,12 +89,49 @@ class CustomSidebar extends StatelessWidget {
                     children: [
                       Column(
                         children: [
-                          const CircleAvatar(
-                            radius: 35,
-                            backgroundColor: Colors.white,
-                            backgroundImage: NetworkImage(
-                              "https://i.pravatar.cc/150?img=11",
-                            ), // صورة المريض
+                          ClipOval(
+                            child: Container(
+                              width: 70,
+                              height: 70,
+                              color: isDark ? Colors.grey[800] : Colors.white,
+                              child: !hasImage
+                                  ? Icon(
+                                      Icons.person,
+                                      size: 40,
+                                      color: isDark
+                                          ? Colors.grey[500]
+                                          : Colors.grey,
+                                    )
+                                  : (safeImageUrl.startsWith('http')
+                                        ? Image.network(
+                                            safeImageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Icon(
+                                              Icons.person,
+                                              size: 40,
+                                              color: Colors.grey,
+                                            ),
+                                          )
+                                        : safeImageUrl.startsWith('assets/')
+                                        ? Image.asset(
+                                            safeImageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Icon(
+                                              Icons.person,
+                                              size: 40,
+                                              color: Colors.grey,
+                                            ),
+                                          )
+                                        : Image.file(
+                                            File(safeImageUrl),
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Icon(
+                                              Icons.person,
+                                              size: 40,
+                                              color: Colors.grey,
+                                            ),
+                                          )),
+                            ),
                           ),
                         ],
                       ),
@@ -105,16 +149,16 @@ class CustomSidebar extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   Text(
-                    ProfileViewModel().patientData.name,
+                    patient.name,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : const Color(0xFF1F2937),
                     ),
                   ),
-                  const Text(
-                    "PATIENT",
-                    style: TextStyle(
+                  Text(
+                    "PATIENT".tr(),
+                    style: const TextStyle(
                       color: primaryTeal,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -142,7 +186,7 @@ class CustomSidebar extends StatelessWidget {
                   _buildDrawerItem(
                     context,
                     Icons.home_filled,
-                    "Home",
+                    "Home".tr(),
                     isSelected: true,
                     onTap: () {
                       Navigator.pop(context); // إغلاق السايدبار
@@ -151,7 +195,7 @@ class CustomSidebar extends StatelessWidget {
                   _buildDrawerItem(
                     context,
                     Icons.person_outline,
-                    "Profile",
+                    "Profile".tr(),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -162,7 +206,7 @@ class CustomSidebar extends StatelessWidget {
                   _buildDrawerItem(
                     context,
                     Icons.shop,
-                    "Orders",
+                    "Orders".tr(),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -173,7 +217,7 @@ class CustomSidebar extends StatelessWidget {
                   _buildDrawerItem(
                     context,
                     Icons.shopping_bag,
-                    "shoop",
+                    "shoop".tr(),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const Shop()),
@@ -182,7 +226,7 @@ class CustomSidebar extends StatelessWidget {
                   _buildDrawerItem(
                     context,
                     Icons.health_and_safety_outlined,
-                    "Top Doctors",
+                    "Top Doctors".tr(),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -193,7 +237,7 @@ class CustomSidebar extends StatelessWidget {
                   _buildDrawerItem(
                     context,
                     Icons.water_drop_outlined,
-                    "Insulin Units",
+                    "Insulin Units".tr(),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const Insulin1()),
@@ -202,7 +246,7 @@ class CustomSidebar extends StatelessWidget {
                   _buildDrawerItem(
                     context,
                     Icons.article_outlined,
-                    "Blog",
+                    "Blog".tr(),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const BlogView()),
@@ -215,7 +259,7 @@ class CustomSidebar extends StatelessWidget {
                   _buildExpandableSection(
                     context,
                     Icons.business_outlined,
-                    "Company",
+                    "Company".tr(),
                     [
                       "About Us",
                       "Our Mission",
@@ -228,13 +272,13 @@ class CustomSidebar extends StatelessWidget {
                   _buildExpandableSection(
                     context,
                     Icons.menu_book_outlined,
-                    "Resources",
+                    "Resources".tr(),
                     ["Monitoring Tools", "Educational Games", "FAQs"],
                   ),
                   _buildExpandableSection(
                     context,
                     Icons.gavel_outlined,
-                    "Legal",
+                    "Legal".tr(),
                     [
                       "Terms Of Service",
                       "Privacy Policy",
@@ -258,11 +302,11 @@ class CustomSidebar extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 20, bottom: 10, top: 5),
+                Padding(
+                  padding: const EdgeInsets.only(left: 20, bottom: 10, top: 5),
                   child: Text(
-                    "PRIMARY NAVIGATION",
-                    style: TextStyle(
+                    "PRIMARY NAVIGATION".tr(),
+                    style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -273,7 +317,7 @@ class CustomSidebar extends StatelessWidget {
                 _buildDrawerItem(
                   context,
                   Icons.settings_outlined,
-                  "Settings",
+                  "Settings".tr(),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -284,7 +328,7 @@ class CustomSidebar extends StatelessWidget {
                 _buildDrawerItem(
                   context,
                   Icons.logout,
-                  "Logout",
+                  "Logout".tr(),
                   isLogout: true,
                   onTap: () async {
                     // ✅ قطع الاتصال بـ Zego لضمان عدم استقبال مكالمات بعد تسجيل الخروج
@@ -498,7 +542,7 @@ class CustomSidebar extends StatelessWidget {
                 }
               },
               child: Text(
-                childText,
+                childText.tr(),
                 style: TextStyle(
                   color: isDark ? Colors.grey[400] : Colors.grey,
                   fontSize: 13,

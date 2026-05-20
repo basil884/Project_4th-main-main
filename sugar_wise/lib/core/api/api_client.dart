@@ -9,7 +9,7 @@ class ApiClient {
     _dio = Dio(
       BaseOptions(
         baseUrl:
-            'http://192.168.1.7:5000/api/', // 🔥 الرابط الخاص بجهازك (للموبايل الحقيقي)
+            'https://sugarwiseworld.com/api/', // 🌍 السيرفر العالمي (Production)
         receiveDataWhenStatusError: true,
         connectTimeout: const Duration(
           seconds: 30,

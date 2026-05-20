@@ -28,7 +28,7 @@ class ProductModel {
     if (img1.isNotEmpty &&
         !img1.startsWith('http') &&
         !img1.startsWith('assets/')) {
-      img1 = "http://192.168.1.7:5000/images/$img1";
+      img1 = "https://sugarwiseworld.com/images/$img1";
     } else if (img1.isEmpty) {
       img1 = "assets/images/Shop/product1.png";
     }
@@ -38,7 +38,7 @@ class ProductModel {
       String img = json['image$i'] ?? "";
       if (img.isNotEmpty) {
         if (!img.startsWith('http') && !img.startsWith('assets/')) {
-          img = "http://192.168.1.7:5000/images/$img";
+          img = "https://sugarwiseworld.com/images/$img";
         }
         allImages.add(img);
       }

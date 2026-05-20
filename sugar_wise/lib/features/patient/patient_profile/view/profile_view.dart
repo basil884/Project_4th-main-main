@@ -5,22 +5,33 @@ import '../view_models/profile_view_model.dart';
 import 'widget/profile_header.dart';
 import 'widget/info_card.dart';
 
-class ProfileView extends StatelessWidget {
+class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
+  State<ProfileView> createState() => _ProfileViewState();
+}
 
-    // تحديث الـ ViewModel ببيانات الباك إيند الحقيقية إذا كانت متوفرة
-    if (userProvider.isLoggedIn) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+class _ProfileViewState extends State<ProfileView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
+
+      if (userProvider.isLoggedIn && userProvider.token != null) {
+        viewModel.fetchPatientProfile(userProvider.token!);
+      } else if (userProvider.isLoggedIn) {
         viewModel.updateFromBackend(userProvider.userData!);
-      });
-    }
+      }
+    });
+  }
 
-    final patient = Provider.of<ProfileViewModel>(context).patientData;
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = Provider.of<ProfileViewModel>(context);
+    final patient = viewModel.patientData;
 
     // 🔥 استخراج حالة الثيم والألوان الأساسية
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -28,12 +39,16 @@ class ProfileView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: bgColor, // ✅ متجاوب مع الثيم
-      body: Stack(
-        children: [
-          // 1. المحتوى الرئيسي (البروفايل)
-          SingleChildScrollView(
-            child: Column(
+      body: viewModel.isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.deepOrange),
+            )
+          : Stack(
               children: [
+                // 1. المحتوى الرئيسي (البروفايل)
+                SingleChildScrollView(
+                  child: Column(
+                    children: [
                 Stack(
                   clipBehavior: Clip.none,
                   alignment: Alignment.bottomCenter,

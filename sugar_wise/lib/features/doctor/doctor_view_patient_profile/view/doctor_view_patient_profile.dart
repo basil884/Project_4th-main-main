@@ -313,7 +313,7 @@ class DoctorViewPatientProfile extends StatelessWidget {
                             // 1. طلب الغرفة الحقيقية من السيرفر
                             final response = await ApiClient.postData(
                               endpoint: 'messages/chats/direct',
-                              data: {'userId1': doctorId, 'userId2': patientId},
+                              data: {'senderId': doctorId, 'receiverId': patientId},
                               token: userProvider.token,
                             );
 
@@ -392,14 +392,42 @@ class DoctorViewPatientProfile extends StatelessWidget {
                               '❌ Error in message button: $e\n$stacktrace',
                             );
                             if (context.mounted) {
-                              Navigator.pop(
-                                context,
-                              ); // إخفاء مؤشر التحميل في حال الخطأ
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to start chat: $e'),
-                                ),
-                              );
+                              Navigator.pop(context);
+                              // ✅ معالجة خطأ الاشتراك بشكل أنيق
+                              if (e.toString().contains('403') ||
+                                  e.toString().contains('SUBSCRIPTION_REQUIRED')) {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    title: const Row(
+                                      children: [
+                                        Icon(Icons.lock_outline, color: Color(0xFF2F80ED)),
+                                        SizedBox(width: 8),
+                                        Text('Subscription Required'),
+                                      ],
+                                    ),
+                                    content: const Text(
+                                      'A patient subscription is required to access messaging.\n\nPlease subscribe to unlock this feature.',
+                                      style: TextStyle(height: 1.5),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Failed to start chat: $e'),
+                                  ),
+                                );
+                              }
                             }
                           }
                         },

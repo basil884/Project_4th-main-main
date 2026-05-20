@@ -178,8 +178,8 @@ class DoctorProfileHeader extends StatelessWidget {
                       final response = await ApiClient.postData(
                         endpoint: 'messages/chats/direct',
                         data: {
-                          'userId1': userProvider.baseUserId,
-                          'userId2': doctor.id, // Doctor's DB ID
+                          'senderId': userProvider.baseUserId,
+                          'receiverId': doctor.id,
                         },
                         token: userProvider.token,
                       );
@@ -232,7 +232,39 @@ class DoctorProfileHeader extends StatelessWidget {
                       }
                     } catch (e) {
                       if (context.mounted) Navigator.pop(context);
-                      debugPrint("❌ Error starting chat: $e");
+                      // ✅ معالجة خطأ الاشتراك المطلوب بشكل أنيق
+                      if (e.toString().contains('403') ||
+                          e.toString().contains('SUBSCRIPTION_REQUIRED')) {
+                        if (context.mounted) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              title: const Row(
+                                children: [
+                                  Icon(Icons.lock_outline, color: Color(0xFF2F80ED)),
+                                  SizedBox(width: 8),
+                                  Text('Subscription Required'),
+                                ],
+                              ),
+                              content: const Text(
+                                'You need an active subscription to start a conversation with a doctor.\n\nPlease subscribe to unlock messaging.',
+                                style: TextStyle(height: 1.5),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      } else {
+                        debugPrint("❌ Error starting chat: $e");
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(

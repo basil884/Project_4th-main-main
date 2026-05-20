@@ -58,7 +58,7 @@ class PatientProfileModel {
       if (cleanPath.startsWith('uploads/')) {
         cleanPath = cleanPath.replaceFirst('uploads/', '');
       }
-      finalImgUrl = "http://192.168.1.7:5000/uploads/$cleanPath";
+      finalImgUrl = "https://sugarwiseworld.com/uploads/$cleanPath";
     }
 
     return PatientProfileModel(

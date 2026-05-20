@@ -66,10 +66,22 @@ class _EditProfileState extends State<EditProfile> {
         ].contains(patient.bloodType)
         ? patient.bloodType
         : "A+";
-    selectedBasal = patient.basalInsulin.isNotEmpty
+    selectedBasal =
+        [
+          "Lantus",
+          "Levemir",
+          "Tresiba",
+          "Toujeo",
+        ].contains(patient.basalInsulin)
         ? patient.basalInsulin
         : "Lantus";
-    selectedBolus = patient.bolusInsulin.isNotEmpty
+    selectedBolus =
+        [
+          "Novorapid",
+          "Humalog",
+          "Apidra",
+          "Fiasp",
+        ].contains(patient.bolusInsulin)
         ? patient.bolusInsulin
         : "Novorapid";
   }
@@ -174,12 +186,26 @@ class _EditProfileState extends State<EditProfile> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
 
-    ImageProvider getImageProvider() {
-      if (_pickedImage != null) return FileImage(_pickedImage!);
-      if (patient.imageUrl.startsWith('assets/')) {
-        return AssetImage(patient.imageUrl);
-      }
-      return FileImage(File(patient.imageUrl));
+    Widget buildProfileImage() {
+      final safeImageUrl = patient.imageUrl.trim();
+      final hasImage = safeImageUrl.isNotEmpty && safeImageUrl != 'null';
+
+      return ClipOval(
+        child: Container(
+          width: 90,
+          height: 90,
+          color: isDark ? Colors.grey[800] : Colors.grey[300],
+          child: _pickedImage != null
+              ? Image.file(_pickedImage!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.person, size: 45, color: Colors.grey))
+              : !hasImage
+                  ? Icon(Icons.person, size: 45, color: isDark ? Colors.grey[500] : Colors.grey)
+                  : (safeImageUrl.startsWith('http')
+                      ? Image.network(safeImageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.person, size: 45, color: Colors.grey))
+                      : safeImageUrl.startsWith('assets/')
+                          ? Image.asset(safeImageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.person, size: 45, color: Colors.grey))
+                          : Image.file(File(safeImageUrl), fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.person, size: 45, color: Colors.grey))),
+        ),
+      );
     }
 
     return Scaffold(
@@ -235,13 +261,7 @@ class _EditProfileState extends State<EditProfile> {
                       onTap: _pickImage,
                       child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 45,
-                            backgroundColor: isDark
-                                ? Colors.grey[800]
-                                : Colors.grey[300],
-                            backgroundImage: getImageProvider(),
-                          ),
+                          buildProfileImage(),
                           Positioned(
                             bottom: 0,
                             right: 0,

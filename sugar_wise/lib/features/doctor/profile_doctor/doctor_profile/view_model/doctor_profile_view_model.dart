@@ -147,7 +147,7 @@ class DoctorProfileViewModel extends ChangeNotifier {
       if (cleanPath.startsWith('uploads/')) {
         cleanPath = cleanPath.replaceFirst('uploads/', '');
       }
-      doctorImage = "http://192.168.1.7:5000/uploads/$cleanPath";
+      doctorImage = "https://sugarwiseworld.com/uploads/$cleanPath";
     }
 
     university = doctorData['university'] ?? "Cairo University";

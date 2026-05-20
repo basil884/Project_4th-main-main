@@ -33,7 +33,7 @@ class PatientModel {
       imageUrl: json['profileImage'] != null
           ? (json['profileImage'].toString().startsWith('http')
                 ? json['profileImage']
-                : "http://192.168.1.7:5000/${json['profileImage'].toString().startsWith('uploads') ? '' : 'uploads/'}${json['profileImage']}")
+                : "https://sugarwiseworld.com/${json['profileImage'].toString().startsWith('uploads') ? '' : 'uploads/'}${json['profileImage']}")
           : "https://ui-avatars.com/api/?name=${json['firstName'] ?? 'P'}&background=random",
     );
   }

@@ -28,7 +28,7 @@ class DoctorsViewModel extends ChangeNotifier {
           if (imageUrl.isEmpty || imageUrl.contains('example.com')) {
              imageUrl = "https://i.pravatar.cc/150?u=${json['_id']}";
           } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('assets/')) {
-             imageUrl = "http://192.168.1.7:5000/images/$imageUrl";
+             imageUrl = "https://sugarwiseworld.com/images/$imageUrl";
           }
 
           return DoctorModle(

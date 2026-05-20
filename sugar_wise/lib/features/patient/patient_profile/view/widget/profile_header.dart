@@ -61,25 +61,53 @@ class ProfileHeader extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 45,
                     backgroundColor: isDark ? bgColor : Colors.white,
-                    child: CircleAvatar(
-                      radius: 42,
-                      backgroundColor: isDark
-                          ? Colors.grey[800]
-                          : Colors.grey[200],
-                      // 🔥 التحقق الآمن من وجود الصورة
-                      backgroundImage: hasImage
-                          ? (safeImageUrl.startsWith('assets/')
-                                ? AssetImage(safeImageUrl) as ImageProvider
-                                : FileImage(File(safeImageUrl)))
-                          : null,
-                      // ✅ إظهار أيقونة الشخص إذا لم تكن هناك صورة
-                      child: hasImage
-                          ? null
-                          : Icon(
-                              Icons.person,
-                              size: 45,
-                              color: isDark ? Colors.grey[500] : Colors.grey,
-                            ),
+                    child: ClipOval(
+                      child: Container(
+                        width: 84,
+                        height: 84,
+                        color: isDark ? Colors.grey[800] : Colors.grey[200],
+                        child: !hasImage
+                            ? Icon(
+                                Icons.person,
+                                size: 45,
+                                color: isDark ? Colors.grey[500] : Colors.grey,
+                              )
+                            : (safeImageUrl.startsWith('http')
+                                  ? Image.network(
+                                      safeImageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Icon(
+                                        Icons.person,
+                                        size: 45,
+                                        color: isDark
+                                            ? Colors.grey[500]
+                                            : Colors.grey,
+                                      ),
+                                    )
+                                  : safeImageUrl.startsWith('assets/')
+                                  ? Image.asset(
+                                      safeImageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Icon(
+                                        Icons.person,
+                                        size: 45,
+                                        color: isDark
+                                            ? Colors.grey[500]
+                                            : Colors.grey,
+                                      ),
+                                    )
+                                  : Image.file(
+                                      File(safeImageUrl),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Icon(
+                                        Icons.person,
+                                        size: 45,
+                                        color: isDark
+                                            ? Colors.grey[500]
+                                            : Colors.grey,
+                                      ),
+                                    )),
+                      ),
                     ),
                   ),
                 ),

@@ -13,48 +13,68 @@ class DashboardViewModel extends ChangeNotifier {
   List<TopDoctorModel> _topDoctors = [];
   List<TopDoctorModel> get topDoctors => _topDoctors;
 
-  DashboardViewModel() {
-    fetchDoctors();
-  }
+  DashboardViewModel();
 
-  Future<void> fetchDoctors() async {
+  Future<void> fetchDoctors({String? token}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final response = await ApiClient.getData(endpoint: 'doctors');
+      final response = await ApiClient.getData(endpoint: 'doctors', token: token);
+      debugPrint("📡 Doctors API Status: ${response.statusCode}");
+      debugPrint("📦 Doctors API Response type: ${response.data.runtimeType}");
+      debugPrint("📦 Doctors API Response: ${response.data}");
+
       if (response.statusCode == 200) {
-        final List data = response.data is List ? response.data : (response.data['data'] ?? []);
-        
+        List data = [];
+
+        // معالجة هياكل الـ response المختلفة
+        if (response.data is List) {
+          data = response.data as List;
+        } else if (response.data is Map) {
+          final map = response.data as Map;
+          // جرب كل المفاتيح الشائعة
+          data = (map['data'] ?? map['doctors'] ?? map['result'] ?? map['results'] ?? []) as List;
+        }
+
+        debugPrint("✅ Doctors count from API: ${data.length}");
+
         _topDoctors = data.map((json) {
-          // معالجة رابط الصورة ليعمل مع السيرفر المحلي
-          String imageUrl = json['selfImg'] ?? "";
-          
+          // معالجة رابط الصورة مع السيرفر الجديد
+          String imageUrl = json['selfImg'] ?? json['profileImage'] ?? json['image'] ?? "";
+
           if (imageUrl.isEmpty || imageUrl.contains('example.com')) {
-             imageUrl = "https://i.pravatar.cc/150?u=${json['_id']}"; // صورة عشوائية مؤقتاً إذا كان الرابط وهمياً
+            imageUrl = "https://i.pravatar.cc/150?u=${json['_id']}"; // صورة عشوائية احتياطية
           } else if (!imageUrl.startsWith('http')) {
-             imageUrl = "http://192.168.1.7:5000/images/$imageUrl";
+            imageUrl = "https://sugarwiseworld.com/images/$imageUrl"; // ✅ السيرفر الجديد
           }
+
+          debugPrint("👨‍⚕️ Doctor: ${json['firstName']} ${json['lastName']} | img: $imageUrl");
 
           return TopDoctorModel(
             id: json['_id'] ?? "0",
-            name: "${json['firstName'] ?? ''} ${json['lastName'] ?? ''}".trim().isEmpty 
-                  ? "Doctor" 
-                  : "Dr. ${json['firstName']} ${json['lastName']}",
-            specialty: json['medicalSpecialty'] ?? "General",
+            name: "${json['firstName'] ?? ''} ${json['lastName'] ?? ''}".trim().isEmpty
+                ? "Doctor"
+                : "Dr. ${json['firstName']} ${json['lastName']}",
+            specialty: json['medicalSpecialty'] ?? json['specialty'] ?? "General",
             rating: (json['rating'] ?? 4.8).toDouble(),
             imageUrl: imageUrl,
-            isAvailable: json['Status'] == "Online",
+            isAvailable: json['Status'] == "Online" || json['status'] == "Online",
           );
         }).toList();
-        
+
         // نأخذ أول 3 فقط للـ Dashboard كـ "Top Doctors"
         if (_topDoctors.length > 3) {
           _topDoctors = _topDoctors.sublist(0, 3);
         }
+
+        debugPrint("✅ topDoctors list size: ${_topDoctors.length}");
+      } else {
+        debugPrint("⚠️ Unexpected status code: ${response.statusCode}");
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint("❌ Error fetching top doctors: $e");
+      debugPrint("📌 StackTrace: $stackTrace");
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // ✅ تم استيراد مكتبة الحفظ
+import 'package:sugar_wise/core/api/api_client.dart';
 import '../models/patient_profile_model.dart';
 
 class ProfileViewModel extends ChangeNotifier {
@@ -22,6 +23,32 @@ class ProfileViewModel extends ChangeNotifier {
     bolusInsulin: "Novorapid",
     otherMedications: ["Vitamin D3", "Multivitamin"],
   );
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  // 🔥 دالة جلب البيانات من السيرفر باستخدام API
+  Future<void> fetchPatientProfile(String token) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await ApiClient.getData(
+        endpoint: 'patients/me',
+        token: token,
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = response.data['data'];
+        updateFromBackend(data);
+      }
+    } catch (e) {
+      debugPrint("Error fetching patient profile: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   // 🔥 دالة جديدة لتحديث البيانات من الـ UserProvider (الباك إيند)
   void updateFromBackend(Map<String, dynamic> data) {
