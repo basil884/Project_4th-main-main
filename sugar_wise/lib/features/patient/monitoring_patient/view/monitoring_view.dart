@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 // ✅ تأكد من أن هذا المسار يطابق مكان الـ ViewModel لديك
 import 'package:sugar_wise/features/patient/monitoring_patient/view_model/monitoring_view_model.dart';
+import 'package:sugar_wise/core/providers/user_provider.dart';
 
 class MonitoringView extends StatelessWidget {
   const MonitoringView({super.key});
@@ -185,8 +186,10 @@ class MonitoringView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 25),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            runSpacing: 10,
             children: [
               Text(
                 "Glucose Trends (${viewModel.selectedFilter})",
@@ -196,63 +199,106 @@ class MonitoringView extends StatelessWidget {
                   color: textColor, // ✅ متجاوب
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.grey.shade900
-                      : Colors.grey.shade100, // ✅ متجاوب
-                  borderRadius: BorderRadius.circular(8),
-                  border: isDark
-                      ? Border.all(color: Colors.grey.shade800)
-                      : null,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: ["Day", "Week", "Mo"].map((filter) {
-                    bool isSelected = viewModel.selectedFilter == filter;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: GestureDetector(
-                        onTap: () => viewModel.setFilter(filter),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFF8EC641)
-                                : Colors.transparent,
-                            border: Border.all(color: const Color(0xFF8EC641)),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: isSelected && !isDark
-                                ? [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.05,
-                                      ),
-                                      blurRadius: 4,
-                                    ),
-                                  ]
-                                : [],
-                          ),
-                          child: Text(
-                            filter,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.w500,
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF8EC641),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: viewModel.zoomOut,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade200,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.zoom_out,
+                        size: 16,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: viewModel.zoomIn,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade200,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.zoom_in,
+                        size: 16,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.grey.shade900
+                          : Colors.grey.shade100, // ✅ متجاوب
+                      borderRadius: BorderRadius.circular(8),
+                      border: isDark
+                          ? Border.all(color: Colors.grey.shade800)
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: ["Day", "Week", "Mo"].map((filter) {
+                        bool isSelected = viewModel.selectedFilter == filter;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () => viewModel.setFilter(filter),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF8EC641)
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: const Color(0xFF8EC641),
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: isSelected && !isDark
+                                    ? [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.05,
+                                          ),
+                                          blurRadius: 4,
+                                        ),
+                                      ]
+                                    : [],
+                              ),
+                              child: Text(
+                                filter,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF8EC641),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -314,10 +360,11 @@ class MonitoringView extends StatelessWidget {
                   ),
                 ),
                 borderData: FlBorderData(show: false),
+                clipData: const FlClipData.all(),
                 minX: 0,
                 maxX: maxX,
-                minY: 60,
-                maxY: 160,
+                minY: viewModel.minY,
+                maxY: viewModel.maxY,
                 lineBarsData: [
                   LineChartBarData(
                     spots: chartSpots.isNotEmpty
@@ -875,6 +922,10 @@ class MonitoringView extends StatelessWidget {
 
                               int glucoseValue =
                                   int.tryParse(glucoseCtrl.text.trim()) ?? 0;
+                              final token = Provider.of<UserProvider>(
+                                context,
+                                listen: false,
+                              ).token;
                               viewModel.saveLog(
                                 glucoseValue: glucoseValue,
                                 unit: selectedUnit,
@@ -886,6 +937,7 @@ class MonitoringView extends StatelessWidget {
                                 insulin: selectedInsulin == "Select insulin..."
                                     ? null
                                     : selectedInsulin,
+                                token: token,
                               );
 
                               Navigator.pop(context);

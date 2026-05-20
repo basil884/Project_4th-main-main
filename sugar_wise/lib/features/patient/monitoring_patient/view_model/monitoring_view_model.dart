@@ -30,6 +30,32 @@ class MonitoringViewModel extends ChangeNotifier {
   String _selectedFilter = 'Day';
   String get selectedFilter => _selectedFilter;
 
+  // Zoom State
+  double _minY = 60;
+  double _maxY = 160;
+
+  double get minY => _minY;
+  double get maxY => _maxY;
+
+  void zoomIn() {
+    if (_maxY - _minY > 60) {
+      _minY += 20;
+      _maxY -= 20;
+      notifyListeners();
+    }
+  }
+
+  void zoomOut() {
+    if (_maxY < 1000) {
+      // allow zooming out to 1000
+      if (_minY >= 20) {
+        _minY -= 20;
+      }
+      _maxY += 50;
+      notifyListeners();
+    }
+  }
+
   final List<String> glucoseUnits = ["mg/dL", "mmol/L"];
   final List<String> defaultFoods = [
     "Select from Default...",
@@ -200,6 +226,7 @@ class MonitoringViewModel extends ChangeNotifier {
     required String time,
     required String meal,
     String? insulin,
+    String? token,
   }) async {
     String status = glucoseValue > 110
         ? "High"
@@ -221,12 +248,19 @@ class MonitoringViewModel extends ChangeNotifier {
         statusColor: color,
       ),
     );
+
+    // ✅ التوسيع التلقائي للرسم البياني إذا كانت القراءة عالية جداً
+    if (glucoseValue >= _maxY) {
+      _maxY = glucoseValue + 50.0;
+    }
+
     notifyListeners();
 
     // 2. إرسال البيانات للسيرفر ليتم تخزينها في MongoDB
     try {
       await ApiClient.postData(
         endpoint: 'diabetes-monitoring',
+        token: token,
         data: {
           "level": glucoseValue,
           "unit": unit,
@@ -234,7 +268,7 @@ class MonitoringViewModel extends ChangeNotifier {
           "time": time,
           "mealType": meal,
           "insulin": insulin,
-          "notes": "Added from mobile app"
+          "notes": "Added from mobile app",
         },
       );
       debugPrint("✅ Reading saved to MongoDB successfully!");
